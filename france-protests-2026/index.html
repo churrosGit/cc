@@ -104,11 +104,18 @@ blockquote cite { display: block; font-family: var(--body); font-weight: 400; fo
 @media (max-width: 480px) { .timeline li { grid-template-columns: 1fr; gap: 0; } }
 
 /* demands table */
-.table-wrap { overflow-x: auto; margin: 1rem 0 2rem; }
-table { border-collapse: collapse; width: 100%; min-width: 30rem; font-size: .93rem; line-height: 1.65; }
+.table-wrap { margin: 1rem 0 2rem; }
+table { border-collapse: collapse; width: 100%; font-size: .93rem; line-height: 1.65; }
 th, td { text-align: left; vertical-align: top; padding: .7rem .8rem; border-bottom: 1px solid var(--rule); }
 th { font-family: var(--mono); font-weight: 500; font-size: .75rem; letter-spacing: .08em; color: var(--muted); }
-td:first-child { font-weight: 700; white-space: nowrap; }
+td:first-child { font-weight: 700; width: 9em; }
+@media (max-width: 600px) {
+  thead { display: none; }
+  table, tbody, tr, td { display: block; width: auto; }
+  tr { padding: .8rem 0; border-bottom: 1px solid var(--rule); }
+  td { padding: 0; border: 0; }
+  td:first-child { width: auto; color: var(--bleu); margin-bottom: .15rem; }
+}
 
 .note { background: var(--panel); padding: 1rem 1.15rem; font-size: .92rem; line-height: 1.75; margin: 1.5rem 0 2rem; }
 .note p:last-child { margin: 0; }
