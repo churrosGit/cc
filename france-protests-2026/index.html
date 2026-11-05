@@ -39,8 +39,8 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 0 4rem;
 }
-article { max-width: var(--wide); margin: 0 auto; display: grid; gap: 0; }
-article > * { width: 100%; max-width: var(--measure); justify-self: center; }
+article { max-width: var(--wide); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+article > * { width: 100%; min-width: 0; max-width: var(--measure); justify-self: center; }
 article > .bleed { max-width: var(--wide); }
 
 /* hero */
