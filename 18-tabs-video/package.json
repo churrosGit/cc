@@ -1,0 +1,11 @@
+{
+  "name": "18-tabs-video",
+  "private": true,
+  "description": "30-second vertical motion piece about the 18 free tools for AI video",
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "5.1.0",
+    "@fontsource/space-grotesk": "5.1.0",
+    "pretendard": "1.3.9",
+    "three": "0.170.0"
+  }
+}
