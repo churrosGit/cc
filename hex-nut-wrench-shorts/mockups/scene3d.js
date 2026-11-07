@@ -125,7 +125,7 @@ export function ratchet(M, o = {}) {
   const gm = add('gear', new THREE.Mesh(extrude(gs, gh - 0.02, 0.01, 1), M.gear)); gm.position.z = floor + 0.01;
   // pawl + pivot pin
   const pm = add('pawl', new THREE.Mesh(extrude(shape(pw.pts), gh - 0.02, 0.01, 1), M.pawl)); pm.position.z = floor + 0.01;
-  const pivotA = pw.A0 - s * 0.6, pv = P((rt + rOut) / 2 + 0.05, pivotA);
+  const pivotA = pw.A0 + s * 0.3, pv = P(rOut - 0.14, pivotA);
   const pin = add('pin', new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, H, 24), M.pin));
   pin.rotation.x = Math.PI / 2; pin.position.set(pv.x, pv.y, H / 2);
   // coil spring pressing the pawl inward
