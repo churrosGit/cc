@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>라쳇 스패너의 원리 · 쇼츠</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1920px;overflow:hidden}
+  body{font-family:Pretendard,sans-serif;color:#fff;position:relative;
+    background:radial-gradient(120% 70% at 50% 48%,#2a2e36 0%,#14161b 55%,#07080a 100%)}
+  canvas,svg{position:absolute;left:0;top:0}
+  .t{position:absolute;white-space:nowrap}
+  #prog{left:72px;top:150px;display:flex;gap:6px}
+  #prog i{display:block;width:111px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden}
+  #prog i b{display:block;height:100%;background:#ff8a2a;width:0}
+  #kick{left:72px;top:190px;font-size:26px;font-weight:600;letter-spacing:.12em;color:#ff8a2a}
+  #title{left:70px;top:234px;font-size:70px;font-weight:800;line-height:1.22;letter-spacing:-.03em}
+  .lab{font-size:30px;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+  .lab small{display:block;font-size:19px;font-weight:500;letter-spacing:.14em;color:rgba(255,255,255,.6)}
+  #sub{position:absolute;left:40px;right:40px;top:1400px;text-align:center;font-size:46px;font-weight:700;line-height:1.38;
+    text-shadow:0 3px 18px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9)}
+  #sub b{color:#ff8a2a}
+  #zoomwrap{position:absolute;left:48px;top:930px;width:450px;height:450px}
+  #z{left:0;top:0;border-radius:50%;border:5px solid #ff8a2a;box-shadow:0 0 0 10px rgba(255,138,42,.15),0 20px 50px rgba(0,0,0,.7);background:#1a1d22}
+  #ztag{left:30px;top:-30px;font-size:22px;font-weight:700;letter-spacing:.14em;color:#ff8a2a;background:#14161b;padding:4px 12px;border-radius:14px}
+  .pop{position:absolute;font-weight:900;color:#ff8a2a;text-shadow:0 0 24px rgba(255,120,30,.7),0 4px 10px rgba(0,0,0,.8);transform-origin:center}
+  #card{position:absolute;left:0;right:0;top:330px;text-align:center}
+  .chip{display:inline-block;font-size:28px;font-weight:700;padding:12px 22px;border-radius:16px;background:rgba(20,22,27,.85);border:2px solid rgba(255,138,42,.6)}
+  #fade{position:absolute;inset:0;background:#000;opacity:0}
+</style></head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<svg id="ov" width="1080" height="1920"></svg>
+<div id="labels"></div>
+<div id="zoomwrap"><canvas id="z" width="440" height="440"></canvas><div class="t" id="ztag">ZOOM ×4</div></div>
+<div id="pops"></div>
+<div class="t" id="prog"></div>
+<div class="t" id="kick"></div>
+<div class="t" id="title"></div>
+<div id="extra"></div>
+<div id="card"></div>
+<div id="sub"></div>
+<div id="fade"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import * as S from './scene3d.js';
+const W = 1080, H = 1920, D = Math.PI / 180;
+const $ = id => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const smooth = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+const lerp = (a, b, k) => a + (b - a) * k;
+const win = (t, a, b, f = 0.3) => clamp(Math.min((t - a) / f, (b - t) / f));   // fade-in/out window
+
+// ======================= timeline =======================
+const SC = [ // [start, end, kicker, title]
+  [0, 4.5, '공구의 원리 · 라쳇 스패너', '왜 너트에서 빼지 않고<br>계속 돌릴 수 있을까?'],
+  [4.5, 15, '비교 ① 일반 스패너', '돌리고, 빼고,<br>다시 끼우고'],
+  [15, 18, '비교 ② 라쳇 스패너', '속을 열어 보면'],
+  [18, 24.5, '비교 ② 라쳇 스패너', '속을 열어 보면'],
+  [24.5, 31, '원리 ① 조일 때', '톱니에 <span style="color:#ff8a2a">걸린다</span>'],
+  [31, 39, '원리 ② 되돌릴 때', '톱니를 <span style="color:#ff8a2a">타고 넘는다</span>'],
+  [39, 45.5, '그래서', '끼운 채 <span style="color:#ff8a2a">왕복만</span>'],
+  [45.5, 50, '', ''],
+];
+const DUR = 50;
+const SUBS = [
+  [0.3, 4.3, '렌치를 한 번도 안 빼고 계속 돌린다?<br>비밀은 이 <b>‘딸깍’</b>에 있어요'],
+  [4.8, 8.4, '일반 스패너는 좁은 곳에서<br><b>돌리고 → 빼고 → 다시 끼우고</b>'],
+  [8.4, 11.4, '이 동작을<br>계속 <b>반복</b>해야 해요'],
+  [11.4, 14.8, '육각 너트는 <b>60°</b>마다 같은 모양이라<br>최소 60°는 돌려야 다시 물려요'],
+  [15.2, 18, '라쳇 스패너는 달라요<br>속을 열어 보면…'],
+  [18.2, 20.2, '너트를 감싸는<br><b>톱니바퀴</b>'],
+  [20.2, 22.2, '톱니에 걸리는<br><b>멈춤쇠</b>'],
+  [22.2, 24.4, '멈춤쇠를 밀어 주는<br><b>스프링</b>'],
+  [24.7, 28.3, '조이는 방향으로 돌리면<br>멈춤쇠가 톱니 수직면에 <b>걸려요</b>'],
+  [28.3, 30.9, '그래서 톱니바퀴와 너트가<br><b>함께</b> 돌아갑니다'],
+  [31.2, 35.0, '반대로 돌리면 멈춤쇠가<br>경사면을 <b>타고 넘어가요</b>'],
+  [35.0, 38.9, '스프링이 다시 밀어 넣는 소리 <b>‘딸깍’</b><br>너트는 그대로예요'],
+  [39.2, 42.4, '그래서 렌치를 끼운 채<br><b>왕복만</b> 하면 끝'],
+  [42.4, 45.4, '실제 제품은 톱니가 약 72개<br><b>5°</b>만 움직여도 다음 톱니에 걸려요'],
+];
+
+// ======================= renderer & shared lights =======================
+const renderer = S.setupRenderer($('c'), { exposure: 1.05 });
+renderer.shadowMap.autoUpdate = true;
+function lights(scene) {
+  S.envMap(renderer, scene, 0.55);
+  const key = new THREE.DirectionalLight(0xfff1e0, 2.6); key.position.set(-6, 14, 4); key.castShadow = true;
+  key.shadow.mapSize.set(1536, 1536); Object.assign(key.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9 }); key.shadow.radius = 6; key.shadow.bias = -0.0004;
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x8fb8ff, 2.2); rim.position.set(7, 4, -8); scene.add(rim);
+}
+const steel = new THREE.MeshStandardMaterial({ color: 0xb8bcc4, metalness: 1, roughness: 0.32 });
+const zinc = new THREE.MeshStandardMaterial({ color: 0xc8b98a, metalness: 1, roughness: 0.3 });
+const plateM = new THREE.MeshStandardMaterial({ color: 0x3a3f47, metalness: 0.85, roughness: 0.55 });
+const chrome = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, metalness: 1, roughness: 0.34 });
+const amberM = () => new THREE.MeshStandardMaterial({ color: 0xff8a2a, emissive: 0xff6a00, emissiveIntensity: 0.6, roughness: 0.4, transparent: true, opacity: 0 });
+const greyM = () => new THREE.MeshStandardMaterial({ color: 0xe8ecf2, emissive: 0x9aa4b4, emissiveIntensity: 0.35, roughness: 0.4, transparent: true, opacity: 0 });
+function base(frame) {
+  const flange = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.7, 0.6, 96), plateM);
+  flange.rotation.x = Math.PI / 2; flange.position.z = -0.44; flange.castShadow = flange.receiveShadow = true; frame.add(flange);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.ShadowMaterial({ opacity: 0.45 }));
+  floor.position.z = -0.74; floor.receiveShadow = true; frame.add(floor);
+  frame.add(S.bolt(steel, { len: 2.9, z0: -1.2 }));
+}
+
+// ======================= scene A: open-end spanner =======================
+const sA = new THREE.Scene(); lights(sA);
+const fA = S.toolFrame(); sA.add(fA); base(fA);
+const nutA = S.nut(zinc, { h: 0.82 }); nutA.position.z = -0.12; fA.add(nutA);
+const hdStart = 62, hdEnd = 122;
+const spPose = new THREE.Group(); spPose.add(S.spanner(chrome, { len: 7.4 })); fA.add(spPose);
+const blockM = new THREE.MeshStandardMaterial({ color: 0x5a3a26, metalness: 0.4, roughness: 0.55 });
+for (const a of [hdStart - 15, hdEnd + 15]) {
+  const b = new THREE.Mesh(new RoundedBoxGeometry(1.3, 2.6, 2.2, 4, 0.12), blockM); const p = S.P(5.8, a);
+  b.position.set(p.x, p.y, 0.36); b.rotation.z = -a * D; b.castShadow = b.receiveShadow = true; fA.add(b);
+}
+const arcA = amberM(); fA.add(S.arcArrow(arcA, { r: 3.9, a1: hdStart + 4, a2: hdEnd - 4, z: 0.75, tube: 0.06, head: 0.3 }));
+const camA = new THREE.PerspectiveCamera(30, W / H, 0.1, 120);
+const SP_CYC = [[5.0, 1.0], [8.4, 0.8], [11.3, 0.8]];
+function spannerState(t) {
+  let p = 0, L = 0, nut = 0, drive = false;
+  SP_CYC.forEach(([t0, sp], k) => {
+    if (t < t0) return; const u = (t - t0) / sp;
+    if (u < 1.5) { p = ease(u / 1.5); L = 0; nut = k + p; drive = true; }
+    else if (u < 1.9) { p = 1; L = ease((u - 1.5) / 0.4); nut = k + 1; drive = false; }
+    else if (u < 2.8) { p = 1 - ease((u - 1.9) / 0.9); L = 1; nut = k + 1; drive = false; }
+    else if (u < 3.2) { p = 0; L = 1 - ease((u - 2.8) / 0.4); nut = k + 1; drive = false; }
+    else { p = 0; L = 0; nut = k + 1; drive = false; }
+  });
+  return { p, L, nut, drive };
+}
+const TAPS = SP_CYC.map(([t0, sp]) => t0 + 3.2 * sp);
+
+// ======================= scene R: ratchet =======================
+const sR = new THREE.Scene(); lights(sR);
+const fR = S.toolFrame(); sR.add(fR); base(fR);
+const nutR = S.nut(zinc, { h: 0.82 }); nutR.position.z = -0.12; fR.add(nutR);
+const T = 128;
+const M = {
+  housing: chrome,
+  gear: new THREE.MeshStandardMaterial({ color: 0xf2f4f7, metalness: 1, roughness: 0.12, emissive: 0x6f9bff, emissiveIntensity: 0 }),
+  pawl: new THREE.MeshStandardMaterial({ color: 0xff7a1a, metalness: 0.55, roughness: 0.3, emissive: 0xff4d00, emissiveIntensity: 0.35 }),
+  pin: new THREE.MeshStandardMaterial({ color: 0x8a8f98, metalness: 1, roughness: 0.3 }),
+  spring: new THREE.MeshStandardMaterial({ color: 0x7fb6ff, metalness: 0.9, roughness: 0.25, emissive: 0x3d7dff, emissiveIntensity: 0 }),
+  cover: new THREE.MeshStandardMaterial({ color: 0x9aa0a8, metalness: 1, roughness: 0.3, transparent: true, opacity: 1 }),
+};
+const R = S.ratchet(M, { T, n: 20, handleLen: 9, toothDepth: 0.34, pawlTeeth: 2 }); fR.add(R);
+const U = R.userData, P_ = U.parts;
+const driveArrow = amberM(), returnArrow = greyM();
+fR.add(S.arcArrow(driveArrow, { r: 3.05, a1: T + 175, a2: T + 245, z: 0.75, tube: 0.05, head: 0.26 }));
+fR.add(S.arcArrow(returnArrow, { r: 3.05, a1: T + 95, a2: T + 30, z: 0.75, tube: 0.05, head: 0.26 }));
+const camR = new THREE.PerspectiveCamera(30, W / H, 0.1, 120), camZ = new THREE.PerspectiveCamera(26, 1, 0.05, 100);
+
+// strokes: [t0, t1, type, degrees, linear?]
+const STROKES = [
+  [0.4, 1.1, 'ret', 36], [1.25, 1.95, 'drv', 36], [2.15, 2.85, 'ret', 36], [3.0, 3.7, 'drv', 36],
+  [25.6, 28.4, 'drv', 36],
+  [32.0, 37.6, 'ret', 36, true],
+  ...[0, 1, 2, 3].map(k => [[39.6 + k * 1.4, 40.15 + k * 1.4, 'ret', 36], [40.3 + k * 1.4, 40.85 + k * 1.4, 'drv', 36]]).flat(),
+];
+function ratchetState(t) {
+  let h = 0, g = 0, mode = '';
+  for (const [t0, t1, type, A, lin] of STROKES) {
+    if (t < t0) break;
+    const k = t >= t1 ? 1 : (lin ? clamp((t - t0) / (t1 - t0)) : ease((t - t0) / (t1 - t0)));
+    if (t < t1) mode = type;
+    if (type === 'drv') { h -= A * k; g -= A * k; } else h += A * k;
+  }
+  return { h, g, mode };
+}
+// click times = moments the pawl drops into the next tooth gap
+const CLICKS = [];
+{ let prev = 0; for (let t = 0; t <= DUR; t += 0.001) { const { h, g } = ratchetState(t); const n = Math.floor((h - g) / U.s + 1e-6); if (n > prev) CLICKS.push(+t.toFixed(3)); prev = n; } }
+window.CLICKS = CLICKS; window.TAPS = TAPS; window.DURATION = DUR;
+
+// ======================= per-frame =======================
+$('prog').innerHTML = SC.map(() => '<i><b></b></i>').join('');
+const bars = [...$('prog').querySelectorAll('b')];
+const ov = $('ov'), labs = $('labels'), zctx = $('z').getContext('2d');
+
+function camOrbit(cam, tgt, dist, az, el) {
+  cam.position.set(tgt.x + dist * Math.cos(el) * Math.sin(az), tgt.y + dist * Math.sin(el), tgt.z + dist * Math.cos(el) * Math.cos(az));
+  cam.lookAt(tgt); cam.updateMatrixWorld();
+}
+const EL = Math.atan2(1, Math.hypot(0.3, 0.7)), AZ = Math.atan2(0.3, 0.7);
+
+window.renderAt = function (t) {
+  const si = SC.findIndex(s => t >= s[0] && t < s[1]); const sc = SC[si < 0 ? SC.length - 1 : si];
+  const idx = si < 0 ? SC.length - 1 : si;
+  bars.forEach((b, i) => b.style.width = (i < idx ? 100 : i > idx ? 0 : 100 * clamp((t - sc[0]) / (sc[1] - sc[0]))) + '%');
+  const hdrOp = idx === 7 ? 0 : win(t, sc[0], sc[1] + (SC[idx + 1] && SC[idx + 1][2] === sc[2] ? 1 : 0), 0.35);
+  $('kick').innerHTML = sc[2]; $('title').innerHTML = sc[3];
+  $('kick').style.opacity = $('title').style.opacity = idx === 3 ? 1 : hdrOp;
+  if (idx === 2) $('kick').style.opacity = $('title').style.opacity = clamp((t - 15) / 0.35);
+  if (idx === 3) $('kick').style.opacity = $('title').style.opacity = clamp((24.5 - t) / 0.35);
+  const cue = SUBS.find(c => t >= c[0] && t < c[1]);
+  $('sub').innerHTML = cue ? cue[2] : ''; $('sub').style.opacity = cue ? win(t, cue[0], cue[1], 0.25) : 0;
+  $('fade').style.opacity = Math.max(clamp(1 - Math.abs(t - 4.5) / 0.28), clamp(1 - Math.abs(t - 15) / 0.28), clamp((t - 49.4) / 0.6));
+  let svg = '', lh = '', pops = '', extra = '', card = '';
+  const showZoom = t >= 24.6 && t < 45.4;
+  $('zoomwrap').style.opacity = showZoom ? win(t, 24.6, 45.4, 0.4) : 0;
+
+  if (t >= 4.5 && t < 15) {
+    // ---------------- open-end spanner ----------------
+    const st = spannerState(t);
+    spPose.rotation.z = -(hdStart + 60 * st.p - 195) * D; spPose.position.z = st.L * 1.05;
+    nutA.rotation.z = -(hdStart - 195) * D - 60 * st.nut * D;
+    arcA.opacity = Math.max(st.drive ? 0.95 : 0, 0.95 * win(t, 11.4, 15, 0.3));
+    camOrbit(camA, new THREE.Vector3(0, 0, 2.7), lerp(35, 32.5, smooth((t - 4.5) / 10)), lerp(0.16, -0.1, smooth((t - 4.5) / 10)), 56 * D);
+    renderer.setClearColor(0, 0); renderer.render(sA, camA);
+    const sp = v => S.toScreen(S.worldOf(fA, v), camA, W, H);
+    if (t > 11.4) {
+      const m = sp(new THREE.Vector3(...S.P(4.6, 92).toArray(), 0.75)); const o = win(t, 11.5, 15, 0.3);
+      lh += `<div class="t" style="left:${m[0]}px;top:${m[1]}px;transform:translate(-50%,-50%);font-size:64px;font-weight:900;color:#ff8a2a;opacity:${o};text-shadow:0 4px 14px rgba(0,0,0,.9)">60°</div>`;
+      extra += `<div class="t chip" style="right:60px;top:1290px;opacity:${win(t, 12.2, 15, 0.3)}">헤드를 뒤집어 끼우면 30°마다</div>`;
+    }
+    const st2 = spannerState(t);
+    const tipW = sp(new THREE.Vector3(...S.P(6.9, hdStart + 60 * st2.p).toArray(), 0.4 + st2.L * 1.05));
+    const step = st2.drive ? '① 돌리고' : st2.L > 0.02 && st2.p > 0.98 ? '② 빼고' : st2.L > 0.02 ? '③ 다시 끼우고' : '';
+    const act = st2.drive ? 0 : st2.L > 0.02 && st2.p > 0.98 ? 1 : st2.L > 0.02 ? 2 : -1;
+    extra += `<div class="t" style="left:72px;top:420px;display:flex;gap:12px;opacity:${win(t, 4.8, 14.8, 0.3)}">` +
+      ['① 돌리고', '② 빼고', '③ 다시 끼우고'].map((x, i) => `<span style="font-size:32px;font-weight:800;padding:8px 18px;border-radius:12px;${i === act ? 'background:#ff8a2a;color:#fff' : 'background:rgba(255,255,255,.08);color:rgba(255,255,255,.45)'}">${x}</span>`).join('') + '</div>';
+  } else {
+    // ---------------- ratchet ----------------
+    const st = ratchetState(t), rel = st.h - st.g;
+    R.rotation.z = st.h * D; P_.gear.rotation.z = (st.g - st.h) * D; nutR.rotation.z = st.g * D;
+    let u = ((rel / U.s) % 1 + 1) % 1; if (u > 0.9995) u = 0;
+    const lift = U.depth * 1.06 * u;
+    P_.pawlPivot.rotation.z = U.pawlSign * Math.asin(clamp(lift / U.arm, -1, 1));
+    P_.springGroup.scale.x = (U.springLen - lift * U.springArm / U.arm) / U.springLen;
+    // cover
+    const cv = smooth((t - 15.6) / 1.6);
+    P_.cover.position.z = U.H + 0.02 + cv * 3.2; M.cover.opacity = 1 - cv; P_.cover.visible = cv < 0.999;
+    // highlights in parts intro
+    M.gear.emissiveIntensity = 0.35 * win(t, 18.2, 20.2, 0.3);
+    M.pawl.emissiveIntensity = 0.35 + 0.6 * win(t, 20.2, 22.2, 0.3) + (st.mode === 'drv' && t > 24 && t < 31 ? 0.5 : 0);
+    M.spring.emissiveIntensity = 0.6 * win(t, 22.2, 24.4, 0.3);
+    driveArrow.opacity = 0.95 * win(t, 25.2, 30.8, 0.4); returnArrow.opacity = 0.95 * win(t, 31.6, 38.6, 0.4);
+    // camera
+    let dist = 25.5, az = AZ, tgt = new THREE.Vector3(0.15, 0, 1.0);
+    if (t < 4.5) { const k = smooth(t / 4.5); dist = lerp(33, 27, k); az = AZ + lerp(0.35, 0.05, k); }
+    else if (t < 24.5) { const k = smooth((t - 15) / 9.5); dist = lerp(28, 24.5, k); az = AZ + lerp(-0.12, 0, k); }
+    else if (t >= 45.5) { const k = smooth((t - 45.5) / 4.5); dist = lerp(25.5, 36, k); az = AZ + lerp(0, 0.4, k); tgt.z = lerp(1.0, 2.2, k); }
+    camOrbit(camR, tgt, dist, az, EL);
+    if (showZoom) { // zoom inset follows the tool head
+      const pw = S.worldOf(R, U.anchors.pawl), q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), st.h * D);
+      camZ.position.copy(pw).add(new THREE.Vector3(0.55, 4.2, 1.3).applyQuaternion(q));
+      camZ.lookAt(pw.clone().add(new THREE.Vector3(0.3, -0.15, 0.05).applyQuaternion(q))); camZ.updateMatrixWorld();
+      renderer.setScissorTest(true); renderer.setViewport(0, 0, 440, 440); renderer.setScissor(0, 0, 440, 440);
+      renderer.setClearColor(0x1a1d22, 1); renderer.render(sR, camZ);
+      zctx.drawImage(renderer.domElement, 0, H - 440, 440, 440, 0, 0, 440, 440);
+      renderer.setScissorTest(false); renderer.setViewport(0, 0, W, H);
+    }
+    renderer.setClearColor(0, 0); renderer.render(sR, camR);
+    // part labels
+    const sp = v => S.toScreen(S.worldOf(R, v), camR, W, H);
+    const items = [
+      [18.2, sp(U.anchors.spring), [150, 520], '스프링', 'SPRING', '#fff', 'left', 22.2],
+      [18.2, sp(U.anchors.pawl), [150, 640], '멈춤쇠', 'PAWL', '#ff8a2a', 'left', 20.2],
+      [18.2, sp(U.anchors.gear(T + 200)), [930, 560], '톱니바퀴', 'GEAR', '#fff', 'right', 18.2],
+    ];
+    for (const [, p, to, txt, en, col, al, tin] of items) {
+      const o = clamp((t - tin) / 0.4) * clamp((39 - t) / 0.4); if (o <= 0) continue;
+      svg += `<g opacity="${o}"><circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${col}"/><circle cx="${p[0]}" cy="${p[1]}" r="14" fill="none" stroke="${col}" stroke-width="2" opacity=".6"/><path d="M${p[0]} ${p[1]}L${to[0]} ${to[1] + 46}" stroke="${col}" stroke-width="2" opacity=".85"/></g>`;
+      lh += `<div class="t lab" style="opacity:${o};${al === 'left' ? 'left:' + (to[0] - 80) : 'right:' + (W - to[0])}px;top:${to[1]}px;color:${col};text-align:${al}">${txt}<small>${en}</small></div>`;
+    }
+    // click pops
+    for (const c of CLICKS) {
+      const a = t - c; if (a < 0 || a > 0.45) continue;
+      const sc2 = 0.6 + 0.5 * Math.min(1, a / 0.08), o = 1 - smooth((a - 0.25) / 0.2);
+      const inZoom = showZoom, x = inZoom ? 300 : 620, y = inZoom ? 1300 : 1060;
+      pops += `<div class="pop" style="left:${x}px;top:${y}px;font-size:${inZoom ? 60 : 72}px;opacity:${o};transform:translate(-50%,-50%) scale(${sc2}) rotate(-8deg)">딸깍!</div>`;
+    }
+    if (st.mode === 'drv' && t > 24.5 && t < 31) pops += `<div class="pop" style="left:330px;top:1300px;font-size:60px;transform:translate(-50%,-50%) rotate(-8deg)">걸림!</div>`;
+    if (t >= 39 && t < 45.5) {
+      const turned = Math.round(-(st.g - ratchetState(39).g));
+      extra += `<div class="t chip" style="right:60px;top:1000px;opacity:${win(t, 39.3, 45.5, 0.3)}">너트 회전 <span style="color:#ff8a2a">${turned}°</span></div>`;
+      extra += `<div class="t chip" style="right:60px;top:1090px;opacity:${win(t, 42.5, 45.5, 0.3)}">일반 60° → 라쳇 <span style="color:#ff8a2a">5°</span></div>`;
+    }
+    if (t >= 45.5) {
+      const o = clamp((t - 45.9) / 0.5);
+      card = `<div style="position:absolute;left:0;right:0;top:-330px;height:1150px;background:radial-gradient(70% 45% at 50% 52%,rgba(7,8,10,.82),rgba(7,8,10,0));opacity:${o}"></div><div style="position:relative;opacity:${o};transform:translateY(${(1 - o) * 30}px)">
+        <div style="font-size:30px;font-weight:600;letter-spacing:.14em;color:#ff8a2a">정리</div>
+        <div style="font-size:84px;font-weight:800;line-height:1.2;letter-spacing:-.03em;text-shadow:0 4px 24px rgba(0,0,0,.9)">한쪽으로만<br>걸리는 톱니</div>
+        <div style="font-size:44px;font-weight:700;margin-top:14px;text-shadow:0 3px 14px #000">= 라쳇의 원리</div>
+        <div style="margin-top:34px;opacity:${clamp((t - 46.8) / 0.5)}"><span class="chip">풀 때는 렌치를 뒤집거나 방향 레버 전환</span></div></div>`;
+    }
+  }
+  ov.innerHTML = svg; labs.innerHTML = lh; $('pops').innerHTML = pops; $('extra').innerHTML = extra; $('card').innerHTML = card;
+};
+const q = new URLSearchParams(location.search);
+if (q.has('t')) window.renderAt(+q.get('t'));
+await document.fonts.ready;
+window.__done = true;
+</script>
+</body></html>

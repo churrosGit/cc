@@ -123,24 +123,32 @@ export function ratchet(M, o = {}) {
   // gear with hex bore
   const gs = shape(gearPts(rr, rt, n, rot)); gs.holes.push(path(hexPts(1.03).reverse()));
   const gm = add('gear', new THREE.Mesh(extrude(gs, gh - 0.02, 0.01, 1), M.gear)); gm.position.z = floor + 0.01;
-  // pawl + pivot pin
-  const pm = add('pawl', new THREE.Mesh(extrude(shape(pw.pts), gh - 0.02, 0.01, 1), M.pawl)); pm.position.z = floor + 0.01;
+  // pawl on a pivot group (rotate pawlPivot.rotation.z to lift it) + pivot pin
   const pivotA = pw.A0 + s * 0.3, pv = P(rOut - 0.14, pivotA);
+  const pg = new THREE.Group(); pg.position.set(pv.x, pv.y, 0); g.add(pg); parts.pawlPivot = pg;
+  const pm = new THREE.Mesh(extrude(shape(pw.pts), gh - 0.02, 0.01, 1), M.pawl);
+  pm.castShadow = pm.receiveShadow = true; pm.position.set(-pv.x, -pv.y, floor + 0.01); pg.add(pm); parts.pawl = pm;
   const pin = add('pin', new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, H, 24), M.pin));
   pin.rotation.x = Math.PI / 2; pin.position.set(pv.x, pv.y, H / 2);
-  // coil spring pressing the pawl inward
+  // coil spring pressing the pawl inward; built along local +x so springGroup.scale.x compresses it
   const sA = aEnd - m * s * 0.3, p1 = P(rSpring + 0.04, sA), p2 = P(rOut, sA);
-  const dir = new THREE.Vector3(p2.x - p1.x, p2.y - p1.y, 0), Ls = dir.length(); dir.normalize();
-  const perp = new THREE.Vector3(-dir.y, dir.x, 0), zc = floor + gh / 2, cp = [];
+  const Ls = p1.distanceTo(p2), zc = floor + gh / 2, cp = [];
   for (let i = 0; i <= 6 * 30; i++) { const t = i / (6 * 30), ang = t * 6 * 2 * Math.PI;
-    cp.push(new THREE.Vector3(p1.x, p1.y, zc).addScaledVector(dir, t * Ls).addScaledVector(perp, 0.09 * Math.cos(ang)).add(new THREE.Vector3(0, 0, 0.09 * Math.sin(ang)))); }
-  add('spring', new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cp), 240, 0.022, 8), M.spring));
+    cp.push(new THREE.Vector3(t * Ls, 0.09 * Math.cos(ang), zc + 0.09 * Math.sin(ang))); }
+  const sg = new THREE.Group(); sg.position.set(p1.x, p1.y, 0); sg.rotation.z = Math.atan2(p2.y - p1.y, p2.x - p1.x); g.add(sg); parts.springGroup = sg;
+  const spm = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cp), 240, 0.022, 8), M.spring);
+  spm.castShadow = spm.receiveShadow = true; sg.add(spm); parts.spring = spm;
+  // which pawl rotation sign lifts the teeth outward, and the lever arms
+  const tooth = P(rt - (rt - rr) / 2, aEnd - s * 0.5), arm = tooth.distanceTo(pv);
+  const rotAbout = (q, a) => { const c = Math.cos(a), sn = Math.sin(a), dx = q.x - pv.x, dy = q.y - pv.y; return new THREE.Vector2(pv.x + dx * c - dy * sn, pv.y + dx * sn + dy * c); };
+  const pawlSign = rotAbout(tooth, 0.01).length() > tooth.length() ? 1 : -1;
+  const springArm = p2.distanceTo(pv);
   // optional top cover (for x-ray look)
   if (M.cover) { const cs = shape(circlePts(RH, 160)); cs.holes.push(path(circlePts(1.15, 96).reverse()));
     const c = add('cover', new THREE.Mesh(extrude(cs, 0.1, 0.02), M.cover)); c.position.z = H + 0.02; c.castShadow = false; }
   g.position.z = -0.0;
   const z = floor + gh;
-  g.userData = { rt, rr, RH, H, aEnd, A0: pw.A0, T, parts,
+  g.userData = { rt, rr, RH, H, aEnd, A0: pw.A0, T, parts, s, depth: rt - rr, pawlSign, arm, springArm, springLen: Ls,
     anchors: { pawl: new THREE.Vector3(...P((rt + rOut) / 2, (pw.A0 + aEnd) / 2).toArray(), z),
       spring: new THREE.Vector3(...P((rOut + rSpring) / 2, sA).toArray(), zc + 0.1),
       gear: (a) => new THREE.Vector3(...P(rt - 0.05, a).toArray(), z), pin: new THREE.Vector3(pv.x, pv.y, H) } };
