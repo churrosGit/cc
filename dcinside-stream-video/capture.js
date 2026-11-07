@@ -8,13 +8,22 @@ const fs = require('fs');
     locale: 'ko-KR'
   });
   const page = await ctx.newPage();
+  let dcconOk = 0, dcconFail = 0;
   await page.route(/dcimg8\.dcinside\.co\.kr\/viewimage/, r => r.fulfill({ status: 200, contentType: 'image/png', body: fs.readFileSync('../body_img.png') }));
-  await page.route(/dcimg5\.dcinside\.com\/dccon/, r => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: fs.readFileSync('dccon.svg') }));
+  // dcimg5.dcinside.com is not reachable here; the same dccon is served by dcimg1/dcimg2.dcinside.com
+  // dcimg5.dcinside.com is not reachable from here; the same dccons were prefetched from dcimg1/dcimg2.dcinside.com
+  await page.route(/dcimg5\.dcinside\.com\/dccon/, r => {
+    const no = new URL(r.request().url()).searchParams.get('no');
+    const f = '../dccons/' + no + '.bin';
+    if (fs.existsSync(f)) { dcconOk++; return r.fulfill({ status: 200, contentType: 'image/png', body: fs.readFileSync(f) }); }
+    dcconFail++;
+    return r.fulfill({ status: 200, contentType: 'image/svg+xml', body: fs.readFileSync('dccon.svg') });
+  });
   await page.route(/(addc\.dcinside|netinsight|pstatic|wcs\.naver|googletag|google-analytics|kakaocdn|jsdelivr)/, r => r.abort());
   await page.goto('https://m.dcinside.com/board/thesingularity/1516221?recommend=1', { waitUntil: 'load', timeout: 60000 });
   await page.waitForTimeout(2500);
   for (let y=0;y<4500;y+=250){ await page.evaluate(y=>window.scrollTo(0,y),y); await page.waitForTimeout(150); }
-  await page.evaluate(()=>window.scrollTo(0,0)); await page.waitForTimeout(1000);
+  await page.waitForTimeout(4000); await page.evaluate(()=>window.scrollTo(0,0)); await page.waitForTimeout(1000);
   // hide floating/fixed bits & tooltips
   await page.evaluate(()=>{
     for (const e of document.querySelectorAll('body *')) {
@@ -70,6 +79,7 @@ const fs = require('fs');
   // locate '추천 21' and '댓글 7' near views line
   layout.reco = await page.evaluate(()=>{const SY=scrollY;const r=[];for(const e of document.querySelectorAll('li,span,a,button')){const t=(e.innerText||'').replace(/\s+/g,' ').trim(); if(/^(추천 \d+|댓글 \d+|조회수 \d+)$/.test(t)){const b=e.getBoundingClientRect(); if(b.top+SY<400) r.push({t,x:b.left,y:b.top+SY,w:b.width,h:b.height});}} return r;});
   layout.star = await page.evaluate(()=>{const SY=scrollY;const r=[];for(const e of document.querySelectorAll('*')){const t=(e.innerText||'').replace(/\s+/g,' ').trim(); if(t==='개념'){const b=e.getBoundingClientRect(); r.push({x:b.left,y:b.top+SY,w:b.width,h:b.height});}} return r;});
+  console.log('dccon ok', dcconOk, 'fail', dcconFail);
   fs.writeFileSync('layout.json', JSON.stringify(layout,null,1));
   await page.screenshot({ path: 'page3x.png', fullPage: true });
   await b.close();
