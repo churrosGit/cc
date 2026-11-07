@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>시안 3 · 클레이 아이소</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1920px;overflow:hidden}
+  body{font-family:Pretendard,sans-serif;color:#2b2d42;position:relative;background:linear-gradient(180deg,#fbf3e4 0%,#f4e7d1 100%)}
+  canvas,svg{position:absolute;left:0;top:0}
+  .t{position:absolute;white-space:nowrap}
+  .bh{font-family:'Black Han Sans',sans-serif}
+  .bub{position:absolute;white-space:nowrap;background:#fff;border-radius:999px;padding:10px 22px;font-size:28px;font-weight:800;
+    box-shadow:0 6px 0 rgba(43,45,66,.12),0 12px 24px rgba(43,45,66,.10)}
+  .chip{display:inline-block;font-size:24px;font-weight:800;color:#fff;padding:6px 16px;border-radius:999px;margin-right:10px;vertical-align:middle}
+</style></head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<svg id="ov" width="1080" height="1920"></svg>
+<div class="t" style="left:0;right:0;top:160px;text-align:center;font-size:30px;font-weight:800;color:#e76f51;letter-spacing:.08em">1분 공구 상식</div>
+<div class="t bh" style="left:0;right:0;top:204px;text-align:center;font-size:96px;line-height:1.08;letter-spacing:-.01em">
+  빼고 끼우고<br><span style="font-size:60px;color:#8d99ae">VS</span> <span style="color:#e76f51">딸깍딸깍</span></div>
+
+<div class="t" style="left:70px;top:905px;font-size:34px;font-weight:800"><span class="chip" style="background:#4f7cff">01</span>일반 스패너</div>
+<div class="t" style="left:70px;top:1440px;font-size:34px;font-weight:800"><span class="chip" style="background:#e76f51">02</span>라쳇 스패너</div>
+<div id="labels"></div>
+<div class="t" style="left:0;right:0;top:1590px;text-align:center">
+  <span style="display:inline-block;background:#2b2d42;color:#fff;font-size:36px;font-weight:800;padding:18px 34px;border-radius:24px;line-height:1.35">
+    안쪽 <span style="color:#ffc93c">톱니</span>가 한쪽으로만 걸려서<br>렌치를 <span style="color:#ffc93c">뺄 필요가 없어요</span></span>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import * as S from './scene3d.js';
+const W = 1080, H = 1920, D = Math.PI / 180;
+const renderer = S.setupRenderer(document.getElementById('c'), { exposure: 1.0 });
+renderer.toneMapping = THREE.NoToneMapping;
+const scene = new THREE.Scene(); S.envMap(renderer, scene, 0.35);
+const clay = (c, rough = 0.85) => new THREE.MeshStandardMaterial({ color: c, roughness: rough, metalness: 0 });
+
+scene.add(new THREE.HemisphereLight(0xfffaf0, 0xd9c7a8, 1.3));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2); sun.position.set(-6, 16, 4); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16 }); sun.shadow.radius = 10; sun.shadow.blurSamples = 20; sun.shadow.bias = -0.0005;
+scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.ShadowMaterial({ opacity: 0.16 }));
+floor.rotation.x = -Math.PI / 2; floor.position.y = -0.62; floor.receiveShadow = true; scene.add(floor);
+
+const nutM = clay(0x8d99ae, 0.6), boltM = clay(0xc3cad6, 0.55);
+function station(pos, baseColor) {
+  const f = S.toolFrame(); f.position.copy(pos); scene.add(f);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 0.5, 64), clay(baseColor));
+  base.rotation.x = Math.PI / 2; base.position.z = -0.12 - 0.25; base.castShadow = base.receiveShadow = true; f.add(base);
+  f.add(S.bolt(boltM, { len: 2.5, z0: -0.6 }));
+  return f;
+}
+// screen-vertical axis in this iso view is world (−1,0,−1); stack the two stations along it
+const UP = new THREE.Vector3(-1, 0, -1).normalize(), RT = new THREE.Vector3(1, 0, -1).normalize();
+const fa = station(UP.clone().multiplyScalar(4.4).addScaledVector(RT, -2.7), 0xcde8dc);
+const fb = station(UP.clone().multiplyScalar(-6.9).addScaledVector(RT, 2.6), 0xffdcc8);
+
+// ---- station A: open-end spanner ----
+const hdEnd = -30, hdStart = hdEnd - 60;
+const nA = S.nut(nutM); nA.position.z = -0.12; nA.rotation.z = -(hdEnd - 195) * D; fa.add(nA);
+const blue = clay(0x4f7cff, 0.55);
+const pose = (f, obj, hd, lift = 0) => { const g = new THREE.Group(); g.rotation.z = -(hd - 195) * D; g.position.z = lift; g.add(obj); f.add(g); return g; };
+pose(fa, S.spanner(blue, { len: 7.2 }), hdEnd);
+const ghostM = new THREE.MeshStandardMaterial({ color: 0x4f7cff, roughness: .6, transparent: true, opacity: .3, depthWrite: false });
+pose(fa, S.ghostify(S.spanner(blue, { len: 7.2 }), ghostM), hdStart, 1.1);
+fa.add(S.arcArrow(clay(0x2b2d42, 0.5), { r: 4.4, a1: hdStart + 6, a2: hdEnd - 4, z: 0.3, tube: 0.12, head: 0.5 }));
+// dotted lift-and-return path from the handle end
+const dotM = clay(0xe76f51, 0.5), tipEnd = S.P(6.8, hdEnd), tipStart = S.P(6.8, hdStart);
+const curve = new THREE.CubicBezierCurve3(new THREE.Vector3(tipEnd.x, tipEnd.y, 0.6), new THREE.Vector3(tipEnd.x, tipEnd.y, 2.4),
+  new THREE.Vector3(tipStart.x, tipStart.y, 2.4), new THREE.Vector3(tipStart.x, tipStart.y, 1.4));
+for (let i = 0; i <= 14; i++) { const d = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 12), dotM); d.position.copy(curve.getPoint(i / 14)); d.castShadow = true; fa.add(d); }
+
+// ---- station B: ratchet, cut-away ----
+const T = 160;
+const nB = S.nut(nutM); nB.position.z = -0.12; fb.add(nB);
+const R = S.ratchet({ housing: clay(0xf1ece4, 0.7), gear: clay(0xf4b52e, 0.6), pawl: clay(0xff5d5d, 0.5), pin: clay(0x2b2d42, 0.5), spring: clay(0x2ec4b6, 0.45) },
+  { T, n: 24, handleLen: 7.2, toothDepth: 0.26, pawlTeeth: 2 });
+fb.add(R);
+fb.add(S.arcArrow(clay(0xe76f51, 0.5), { r: 3.15, a1: -70, a2: 10, z: 0.9, tube: 0.12, head: 0.5 }));
+fb.add(S.arcArrow(clay(0x8d99ae, 0.5), { r: 3.15, a1: 100, a2: 30, z: 0.9, tube: 0.1, head: 0.45 }));
+
+// ---- camera: orthographic iso ----
+const vh = 29, cam = new THREE.OrthographicCamera(-vh * W / H / 2, vh * W / H / 2, vh / 2, -vh / 2, 0.1, 200);
+const tgt = UP.clone().multiplyScalar(-0.9);
+cam.position.copy(tgt).add(new THREE.Vector3(30, 33, 30)); cam.lookAt(tgt); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+renderer.render(scene, cam);
+
+// ---- bubbles ----
+const ov = document.getElementById('ov'), L = document.getElementById('labels');
+const sc = (f, v) => S.toScreen(S.worldOf(f, v), cam, W, H);
+let svg = '';
+const bubble = (p, dx, dy, html, color) => {
+  const x = p[0] + dx, y = p[1] + dy;
+  svg += `<path d="M${p[0]} ${p[1]}L${x} ${y}" stroke="#2b2d42" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/><circle cx="${p[0]}" cy="${p[1]}" r="8" fill="#2b2d42" stroke="#fff" stroke-width="3"/>`;
+  L.innerHTML += `<div class="bub" style="left:${x}px;top:${y}px;transform:translate(-50%,-50%);color:${color || '#2b2d42'}">${html}</div>`;
+};
+const A = R.userData.anchors;
+bubble(sc(fa, new THREE.Vector3(...S.P(4.4, hdEnd - 30).toArray(), 0.3)), 120, 70, '① 조금 돌리고');
+bubble(sc(fa, curve.getPoint(0.5)), 40, -70, '② 빼서 ③ 다시 끼우기', '#e76f51');
+bubble(sc(R, A.pawl), -240, 70, '멈춤쇠', '#ff5d5d');
+bubble(sc(R, A.gear(T + 120)), 130, -90, '톱니바퀴', '#c98a00');
+bubble(sc(R, A.spring), -200, -95, '스프링', '#1a9e93');
+bubble(sc(fb, new THREE.Vector3(...S.P(3.15, -30).toArray(), 0.9)), -10, 125, '조이면 <b>걸림</b>', '#e76f51');
+bubble(sc(fb, new THREE.Vector3(...S.P(3.15, 65).toArray(), 0.9)), -170, 95, '돌아오면 <b>딸깍</b>', '#5c6784');
+ov.innerHTML = svg;
+window.__done = true;
+</script>
+</body></html>

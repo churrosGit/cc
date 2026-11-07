@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>시안 2 · 엑스레이 분할</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1920px;overflow:hidden}
+  body{font-family:Pretendard,sans-serif;color:#e6f6ff;position:relative;
+    background:radial-gradient(90% 60% at 50% 50%,#0c2747 0%,#061529 60%,#030a15 100%)}
+  canvas,svg{position:absolute;left:0;top:0}
+  .t{position:absolute;white-space:nowrap}
+  .mono{font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;padding:4px 12px;border-radius:4px;letter-spacing:.08em}
+  .h{font-size:44px;font-weight:800;letter-spacing:-.02em}
+  .p{font-size:28px;font-weight:500;color:rgba(230,246,255,.75)}
+  .cap{font-size:26px;font-weight:700;text-shadow:0 2px 10px #000}
+</style></head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<svg id="ov" width="1080" height="1920"></svg>
+<div class="t mono" style="left:64px;top:168px;font-size:22px;color:#4fd8ff">X-RAY VIEW · HEX NUT / 10mm</div>
+<div class="t" style="left:62px;top:204px;font-size:66px;font-weight:800;letter-spacing:-.03em;line-height:1.18">스패너 vs 라쳇<br><span style="color:#4fd8ff">속을 들여다보면</span></div>
+
+<div class="t tag" style="left:64px;top:414px;background:#ff5d73;color:#120308">01</div>
+<div class="t h" style="left:122px;top:402px">일반 스패너</div>
+<div class="t p" style="left:64px;top:462px">돌리고 → 빼고 → 다시 끼우고</div>
+
+<div class="t tag" style="left:64px;top:1010px;background:#ffb02e;color:#140c00">02</div>
+<div class="t h" style="left:122px;top:998px">라쳇 스패너</div>
+<div class="t p" style="left:64px;top:1058px">끼운 채로 젖혔다 · 돌아오기만</div>
+<div id="labels"></div>
+
+<div class="t" style="left:64px;top:1612px;width:830px;white-space:normal;font-size:34px;font-weight:700;line-height:1.4;padding:18px 24px;background:rgba(3,10,21,.7);border-left:6px solid #4fd8ff">
+  톱니는 한 방향만 걸리고, 반대 방향은 <span style="color:#ffb02e">미끄러진다</span>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import * as S from './scene3d.js';
+const W = 1080, H = 1920, D = Math.PI / 180;
+const renderer = S.setupRenderer(document.getElementById('c'), { exposure: 1.0 });
+renderer.autoClear = false;
+
+const CY = 0x4fd8ff, AMB = 0xffb02e, RED = 0xff5d73;
+const solid = (c, e = 0.25, rough = 0.35) => new THREE.MeshStandardMaterial({ color: c, metalness: 0.7, roughness: rough, emissive: c, emissiveIntensity: e });
+const glass = (c, o) => new THREE.MeshStandardMaterial({ color: c, transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide, emissive: c, emissiveIntensity: 0.25, metalness: 0, roughness: 0.2 });
+function xray(obj, color, opacity, edgeOpacity = 0.85) {
+  obj.traverse(o => { if (o.isMesh && !o.userData.edge) {
+    o.material = glass(color, opacity); o.castShadow = false;
+    const e = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 28), new THREE.LineBasicMaterial({ color, transparent: true, opacity: edgeOpacity }));
+    e.userData.edge = true; o.add(e); } });
+  return obj;
+}
+function baseScene() {
+  const sc = new THREE.Scene(); S.envMap(renderer, sc, 0.5);
+  sc.add(new THREE.AmbientLight(0x88aaff, 0.6));
+  const k = new THREE.DirectionalLight(0xffffff, 1.6); k.position.set(-4, 10, 6); sc.add(k);
+  const grid = new THREE.GridHelper(40, 40, 0x1f5a8a, 0x123a63); grid.position.y = -0.75; sc.add(grid);
+  const grid2 = new THREE.GridHelper(40, 200, 0x0d2c4d, 0x0d2c4d); grid2.position.y = -0.76; grid2.material.opacity = .5; grid2.material.transparent = true; sc.add(grid2);
+  return sc;
+}
+const steel = solid(0xa9c4dc, 0.08, 0.3);
+
+// ---------------- Panel 01: open-end spanner ----------------
+const A = baseScene(), fa = S.toolFrame(); A.add(fa);
+fa.add(S.bolt(steel, { len: 2.6, z0: -0.75 }));
+const hdEnd = 22, swing = 60, hdStart = hdEnd - swing;
+const nutA = S.nut(solid(0xd7e6f2, 0.12, 0.3)); nutA.rotation.z = -(hdEnd - 195) * D; nutA.position.z = -0.12; fa.add(nutA);
+const spSolid = S.spanner(solid(0xff5d73, 0.35, 0.3), { len: 7.5 });
+const pose = (obj, hd, lift = 0) => { const g = new THREE.Group(); g.rotation.z = -(hd - 195) * D; g.position.z = lift; g.add(obj); fa.add(g); return g; };
+pose(spSolid, hdEnd);
+pose(xray(S.spanner(solid(0xffffff), { len: 7.5 }), RED, 0.07, 0.55), hdStart);
+pose(xray(S.spanner(solid(0xffffff), { len: 7.5 }), RED, 0.10, 0.75), hdEnd, 2.0);
+// obstacles = tight space
+const wallM = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.4, 1.7));
+for (const [a, r] of [[hdStart - 16, 5.6], [hdEnd + 16, 5.6]]) {
+  const m = xray(wallM.clone(), CY, 0.08, 0.6); const p = S.P(r, a); m.position.set(p.x, p.y, 0.1); m.rotation.z = -a * D; fa.add(m);
+}
+const mat = c => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.9 });
+fa.add(S.arcArrow(mat(0xffd3da), { r: 4.9, a1: hdStart + 3, a2: hdEnd - 3, z: 0.25, tube: 0.06, head: 0.32 }));        // ① turn
+// ② lift: vertical arrow at handle tip, ③ return in the air
+const tip = S.P(6.6, hdEnd);
+const up = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.0, 12), mat(RED)); up.rotation.x = Math.PI / 2; up.position.set(tip.x, tip.y, 0.95); fa.add(up);
+const upc = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.36, 20), mat(RED)); upc.rotation.x = Math.PI / 2; upc.position.set(tip.x, tip.y, 1.6); fa.add(upc);
+fa.add(S.arcArrow(mat(RED), { r: 6.6, a1: hdEnd - 3, a2: hdStart + 3, z: 2.0, tube: 0.05, head: 0.3 }));
+const camA = new THREE.PerspectiveCamera(32, 1080 / 560, 0.1, 100);
+camA.position.set(1.6, 10.6, 10.2); camA.lookAt(1.5, 0.6, -0.1); camA.updateMatrixWorld();
+
+// ---------------- Panel 02: ratchet x-ray ----------------
+const B = baseScene(), fb = S.toolFrame(); B.add(fb);
+fb.add(S.bolt(steel, { len: 2.6, z0: -0.75 }));
+const nutB = S.nut(solid(0xd7e6f2, 0.12, 0.3)); nutB.position.z = -0.12; fb.add(nutB);
+const T = 162;
+const R = S.ratchet({ housing: solid(0xffffff), gear: solid(0x1b8fc0, 0.3, 0.25), pawl: solid(AMB, 0.6, 0.3), pin: solid(0xffffff, 0.3), spring: solid(0xffffff, 0.5) },
+  { T, n: 72, handleLen: 7.5, toothDepth: 0.15 });
+for (const k of ['housing', 'floor', 'handle']) xray(R.userData.parts[k], CY, k === 'floor' ? 0.05 : 0.10, 0.8);
+const ge = new THREE.LineSegments(new THREE.EdgesGeometry(R.userData.parts.gear.geometry, 20), new THREE.LineBasicMaterial({ color: 0xbff3ff, transparent: true, opacity: .55 })); R.userData.parts.gear.add(ge);
+fb.add(R);
+fb.add(S.arcArrow(mat(AMB), { r: 3.05, a1: -62, a2: 2, z: 0.75, tube: 0.06, head: 0.3 }));
+fb.add(S.arcArrow(mat(0xbfe9ff), { r: 3.75, a1: 44, a2: -20, z: 0.75, tube: 0.05, head: 0.28 }));
+const camB = new THREE.PerspectiveCamera(32, 1080 / 560, 0.1, 100);
+camB.position.set(0.9, 9.6, 6.6); camB.lookAt(0.2, 0, 0.55); camB.updateMatrixWorld();
+
+// ---------------- render both panels ----------------
+const panels = [[A, camA, 440], [B, camB, 1036]];
+renderer.setClearColor(0x000000, 0); renderer.clear();
+renderer.setScissorTest(true);
+for (const [sc, cam, top] of panels) {
+  const y = H - top - 560; renderer.setViewport(0, y, 1080, 560); renderer.setScissor(0, y, 1080, 560); renderer.render(sc, cam);
+}
+// ---------------- overlay ----------------
+const ov = document.getElementById('ov'), L = document.getElementById('labels');
+const scr = (obj, v, cam, top) => S.toScreen(S.worldOf(obj, v), cam, 1080, 560, [0, top, 1080, 560]);
+let svg = '';
+const bracket = (x, y, w, h, c) => { const k = 26; return `<path d="M${x} ${y + k}V${y}H${x + k}M${x + w - k} ${y}H${x + w}V${y + k}M${x + w} ${y + h - k}V${y + h}H${x + w - k}M${x + k} ${y + h}H${x}V${y + h - k}" fill="none" stroke="${c}" stroke-width="3"/>`; };
+svg += bracket(40, 396, 1000, 590, 'rgba(79,216,255,.55)') + bracket(40, 992, 1000, 590, 'rgba(79,216,255,.55)');
+const label = (p, x, y, html, c, anchorRight) => {
+  svg += `<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="${c}"/><path d="M${p[0]} ${p[1]}L${x} ${y}H${anchorRight ? x - 40 : x + 40}" stroke="${c}" stroke-width="2" fill="none"/>`;
+  L.innerHTML += `<div class="t cap" style="${anchorRight ? `right:${W - x + 48}px` : `left:${x + 48}px`};top:${y - 18}px;color:${c === '#fff' ? '#e6f6ff' : c}">${html}</div>`;
+};
+// panel 1 step labels
+const m1 = scr(fa, new THREE.Vector3(...S.P(4.9, (hdStart + hdEnd) / 2).toArray(), 0.25), camA, 440);
+const m2 = scr(fa, new THREE.Vector3(tip.x, tip.y, 1.1), camA, 440);
+const m3 = scr(fa, new THREE.Vector3(...S.P(6.6, hdEnd - 30).toArray(), 2.0), camA, 440);
+L.innerHTML += `<div class="t cap" style="left:${m1[0] - 250}px;top:${m1[1] - 18}px;color:#ffd3da">① 60° 돌리고</div>`;
+L.innerHTML += `<div class="t cap" style="left:${m2[0] + 26}px;top:${m2[1] - 10}px;color:#ff5d73">② 빼고</div>`;
+L.innerHTML += `<div class="t cap" style="left:${m3[0] - 90}px;top:${m3[1] - 56}px;color:#ff5d73">③ 되돌려 끼우기</div>`;
+const w1 = scr(fa, new THREE.Vector3(...S.P(5.6, hdStart - 16).toArray(), 1.4), camA, 440);
+L.innerHTML += `<div class="t mono" style="left:${w1[0] - 60}px;top:${w1[1] - 50}px;font-size:20px;color:#4fd8ff">OBSTACLE</div>`;
+// panel 2 part labels
+const An = R.userData.anchors;
+label(scr(R, An.pawl, camB, 1036), 120, 1400, '멈춤쇠 <span class="mono" style="font-size:18px">PAWL</span>', '#ffb02e', false);
+label(scr(R, An.spring, camB, 1036), 120, 1180, '스프링 <span class="mono" style="font-size:18px">SPRING</span>', '#fff', false);
+label(scr(R, An.gear(T + 140), camB, 1036), 1000, 1130, '톱니바퀴 72T', '#4fd8ff', true);
+const ar1 = scr(fb, new THREE.Vector3(...S.P(3.05, -40).toArray(), 0.75), camB, 1036);
+const ar2 = scr(fb, new THREE.Vector3(...S.P(3.75, 30).toArray(), 0.75), camB, 1036);
+L.innerHTML += `<div class="t cap" style="left:${ar1[0] - 30}px;top:${ar1[1] - 96}px;color:#ffb02e">조임 = 걸림 → 너트 회전</div>`;
+L.innerHTML += `<div class="t cap" style="left:${ar2[0] - 380}px;top:${ar2[1] + 66}px;color:#bfe9ff">복귀 = 헛돎 “딸깍”</div>`;
+ov.innerHTML = svg;
+window.__done = true;
+</script>
+</body></html>
