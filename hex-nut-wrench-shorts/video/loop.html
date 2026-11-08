@@ -86,11 +86,11 @@ const pivot = new THREE.Group(); pivot.add(WR); fB.add(pivot);
 const U = WR.userData, P_ = U.parts;
 const camB = cam(ASP, new THREE.Vector3(2.0, 0, -0.1), 13.5, 0.0, 58 * D);
 const A0 = 30, SW = 60;                     // same 60° stroke as the open-end spanner, handle swings +30° -> -30°
-function ratchet(t) {                       // period 4 s, phased with spanner(): tighten together, then swing back
-  const k = Math.floor(t / 4), u = t - 4 * k;
-  const dk = ease((u - 0.2) / 1.6), rk = ease((u - 2.0) / 1.6);
+function ratchet(t) {                       // period 2 s: twice the strokes of the open-end spanner in the same 8 s
+  const k = Math.floor(t / 2), u = t - 2 * k;
+  const dk = ease((u - 0.2) / 0.75), rk = ease((u - 1.05) / 0.75);
   const h = A0 - SW * dk + SW * rk, g = -SW * (k + dk);
-  return { h, g, mode: u >= 0.2 && u < 1.8 ? 'drv' : u >= 2.0 && u < 3.6 ? 'ret' : '' };
+  return { h, g, mode: u >= 0.2 && u < 0.95 ? 'drv' : u >= 1.05 && u < 1.8 ? 'ret' : '' };
 }
 const CLICKS = []; { let prev = 0; for (let t = 0; t < DUR; t += 0.0005) { const s = ratchet(t), n = Math.floor((s.h - A0 - s.g) / U.s + 1e-6); if (n > prev) CLICKS.push(+t.toFixed(4)); prev = n; } }
 window.CLICKS = CLICKS; window.TAPS = []; window.DURATION = DUR;
