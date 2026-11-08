@@ -1,0 +1,104 @@
+{
+ "rd1": {
+  "url": "https://www.reddit.com/r/ClaudeCode/comments/1xqcun4/the_limits_are_draining_much_faster_today/",
+  "marks": [
+   [
+    "title",
+    "",
+    "red",
+    "오늘 한도가 훨씬 빨리 닳고 있다"
+   ],
+   [
+    "p",
+    "Is it just me",
+    "red",
+    "나만 그래? Max 5x 계정의 5시간 한도가 평소보다 두 배 빨리 닳는다"
+   ]
+  ]
+ },
+ "rd2": {
+  "url": "https://www.reddit.com/r/ClaudeCode/comments/1xq4ree/usage_limit_has_gotten_worse/",
+  "marks": [
+   [
+    "title",
+    "",
+    "red",
+    "사용 한도가 더 나빠졌다??"
+   ],
+   [
+    "p",
+    "With just few prompts",
+    "green",
+    "프롬프트 몇 번 만에 5시간 한도가 끝난다 (Max 5x 요금제, 미디엄·하이 설정)"
+   ]
+  ]
+ },
+ "rd3": {
+  "url": "https://www.reddit.com/r/ClaudeCode/comments/1xqlof1/weekly_limits_massively_reduced_on_latest_rest/",
+  "marks": [
+   [
+    "title",
+    "",
+    "red",
+    "최근 리셋 후 주간 한도가 크게 줄었다 (토큰 수 첨부)"
+   ],
+   [
+    "p",
+    "Claude Max (5x) plan",
+    "green",
+    "Max 5x, 오퍼스 5.5만 사용. 이번 주간 리셋은 이전 3번보다 훨씬 적은 토큰만 쓸 수 있었다"
+   ],
+   [
+    "table",
+    "",
+    "green",
+    "이전 3주는 1.6만~1.8만 건 요청에 한도 소진, 이번 주는 1.2만 건에 벌써 98%"
+   ]
+  ]
+ },
+ "rd4": {
+  "url": "https://www.reddit.com/r/ClaudeCode/comments/1xqljmy/vindicated_opus_55_definitively_nerfed/",
+  "marks": [
+   [
+    "title",
+    "",
+    "red",
+    "내가 맞았다: 오퍼스 5.5는 확실히 너프됐다"
+   ]
+  ]
+ },
+ "rd5": {
+  "url": "https://www.reddit.com/r/ClaudeCode/comments/1xqgxg6/opus_55_fist_week_of_launch_vs_opus_55_recently/",
+  "marks": [
+   [
+    "title",
+    "",
+    "red",
+    "출시 첫 주 오퍼스 5.5 vs 최근 오퍼스 5.5, 무슨 일이야?"
+   ],
+   [
+    "media",
+    "",
+    "green",
+    "위: 출시 첫 주 (주간 한도 21% 사용) · 아래: 최근 (주간 한도 150% 사용)"
+   ]
+  ]
+ },
+ "rd10": {
+  "url": "https://www.reddit.com/r/ClaudeCode/comments/1xqqco0/anyone_else_hitting_usage_limits_quicker_last/",
+  "marks": [
+   [
+    "title",
+    "",
+    "red",
+    "지난주와 이번 주, 한도에 더 빨리 걸리는 사람 또 있어?"
+   ],
+   [
+    "p",
+    "I been using Max",
+    "green",
+    "몇 달째 Max를 쓰는데, 최근 1~2주 사이 한도에 정말 빨리 도달한다. 다른 사람도 그래?"
+   ]
+  ]
+ }
+}
