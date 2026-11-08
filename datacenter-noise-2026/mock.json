@@ -1,0 +1,23 @@
+{
+ "nbcq": {
+  "url": "https://www.nbcphiladelphia.com/news/local/vineland-loud-humming-noise-ai-data-center/",
+  "h": 2600,
+  "marks": [
+   {
+    "id": "quote",
+    "text": "You can’t sleep. You can’t fall asleep",
+    "tag": "p",
+    "color": "green",
+    "lines": [
+     "잠을 잘 수가 없어요. 바로 잠들지도 못하고",
+     "자다가도 깨요\" 스콧 몽고메리의 말이다.",
+     "창문 열어 두고 자거나 지내고 싶은데",
+     "날이 풀렸거든요. 겨울이 혹독했잖아요.",
+     "그런데 소리가 진동처럼 울리는 게",
+     "집 전체에서 느껴져요."
+    ],
+    "fs": 17
+   }
+  ]
+ }
+}

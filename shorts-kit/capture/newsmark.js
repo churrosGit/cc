@@ -6,6 +6,9 @@
 //          "marks": [ { "text": "substring", "tag": "p", "color": "red|green", "tr": "번역", "pos": "after|before" } ] } }
 //   tag defaults to "h1,h2,p,li,blockquote,figcaption"; the smallest matching element containing text is marked.
 //   pos "before" puts the translation above (use for images/tables).
+//   "lines": ["줄1 번역", ...] instead of "tr" writes the Korean under each English line (interlinear);
+//   "fs" sets its font size (CSS px, default 17). The English lines found are printed so the
+//   translations can be matched to them.
 // Output: <name>.png (1080 wide) and prints mark rects in output pixels (x3) for piece planning.
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -24,6 +27,9 @@ const CSS = `
   .x-tr { display:block; width:fit-content; max-width:100%; margin:12px 0 14px; padding:6px 10px 7px; border-radius:6px; box-sizing:border-box;
           background: rgba(255,255,255,0.3); -webkit-backdrop-filter: blur(1.5px); backdrop-filter: blur(1.5px);
           color: var(--c); font: 600 15px/1.45 'PretendardX', sans-serif; letter-spacing:-0.2px; white-space:normal; text-align:left; }
+  .x-ln { position:absolute; white-space:nowrap; padding:0 4px; border-radius:4px; pointer-events:none;
+          background: rgba(255,255,255,0.3); -webkit-backdrop-filter: blur(1.5px); backdrop-filter: blur(1.5px);
+          color: var(--c); font: 600 var(--fs)/1.25 'PretendardX', sans-serif; letter-spacing:-0.3px; }
 `;
 (async () => {
   const browser = await chromium.launch({ proxy: { server: process.env.HTTPS_PROXY } });
@@ -63,6 +69,39 @@ const CSS = `
         if (!el) { missing.push(m.text); continue; }
         el.classList.add('x-mark'); el.style.setProperty('--c', COLORS[m.color]);
         el.dataset.kind = m.id || m.text.slice(0, 12);
+        if (m.lines) {
+          // interlinear: open up the line spacing, then put the Korean for each English line right under it
+          const fs = parseFloat(getComputedStyle(el).fontSize);
+          const kfs = m.fs || 17;
+          el.style.setProperty('line-height', Math.round(fs * 1.2 + kfs * 1.25 - 2) + 'px', 'important');
+          el.style.position = 'relative';
+          el.style.paddingBottom = Math.round(kfs * 0.9) + 'px';
+          const words = [];
+          const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+          while (walk.nextNode()) {
+            const n = walk.currentNode; const re = /\S+/g; let mm;
+            while ((mm = re.exec(n.data))) {
+              const r = document.createRange(); r.setStart(n, mm.index); r.setEnd(n, mm.index + mm[0].length);
+              const b = r.getClientRects()[0]; if (b) words.push({ w: mm[0], b });
+            }
+          }
+          const lines = [];
+          for (const { w, b } of words) {
+            const L = lines.find(l => Math.abs(l.top - b.top) < 4);
+            if (L) { L.text += ' ' + w; L.left = Math.min(L.left, b.left); L.bottom = Math.max(L.bottom, b.bottom); }
+            else lines.push({ text: w, top: b.top, bottom: b.bottom, left: b.left });
+          }
+          lines.sort((a, b) => a.top - b.top);
+          const eb = el.getBoundingClientRect();
+          lines.forEach((l, i) => {
+            if (!m.lines[i]) return;
+            const t = document.createElement('div'); t.className = 'x-ln'; t.textContent = m.lines[i];
+            t.style.setProperty('--c', COLORS[m.color]); t.style.setProperty('--fs', kfs + 'px');
+            t.style.left = (l.left - eb.left - 4) + 'px'; t.style.top = (l.bottom - eb.top - 3) + 'px';
+            el.appendChild(t);
+          });
+          missing.push('LINES ' + JSON.stringify(lines.map(l => l.text)));
+        }
         if (m.tr) {
           const t = document.createElement('div'); t.className = 'x-tr'; t.style.setProperty('--c', COLORS[m.color]); t.textContent = m.tr;
           t.dataset.kind = (m.id || m.text.slice(0, 12)) + '-tr';
