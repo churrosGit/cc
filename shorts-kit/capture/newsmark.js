@@ -10,9 +10,11 @@
 //   "fs" sets its font size (CSS px, default 17). The English lines found are printed so the
 //   translations can be matched to them. "overlay": true keeps the article's own line spacing, so the Korean
 //   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity
-//   (default 0.3, 0 = no background or blur); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
+//   (default 0.3, 0 = no background or blur); "up": CSS px the Korean moves up into its own line (default 3); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
 // spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
 //   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
+//   "layers": true also writes <name>_ko.png (Korean lines only, transparent) and keeps them out of <name>.png,
+//   so build.py can animate single lines; the printed "lines" are their [top, bottom] in output px.
 // Output: <name>.png (1080 wide) and prints mark rects in output pixels (x3) for piece planning.
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -108,7 +110,7 @@ const CSS = `
             if (m.bg === 0) { t.style.background = 'none'; t.style.backdropFilter = t.style.webkitBackdropFilter = 'none'; }
             else if (m.bg != null) t.style.background = `rgba(255,255,255,${m.bg})`;
             if (m.weight) t.style.fontWeight = m.weight;
-            t.style.left = (l.left - eb.left - 4) + 'px'; t.style.top = (l.bottom - eb.top - 3) + 'px';
+            t.style.left = (l.left - eb.left - 4) + 'px'; t.style.top = (l.bottom - eb.top - (m.up ?? 3)) + 'px';
             el.appendChild(t);
           });
           missing.push('LINES ' + JSON.stringify(lines.map(l => l.text)));
@@ -139,7 +141,20 @@ const CSS = `
       h = Math.min(s.h || 2400, await page.evaluate(() => document.documentElement.scrollHeight));
       await page.screenshot({ path: path.join(out, name + '.png'), clip: { x: 0, y: 0, width: 360, height: h }, fullPage: true });
     }
-    console.log(name, JSON.stringify({ h: h * 3, ...info, rects }));
+    // line rects of the interlinear Korean (output px, relative to the saved image)
+    const lineRects = await page.evaluate(view => [...document.querySelectorAll('.x-ln')].map(e => {
+      const b = e.getBoundingClientRect(); const off = view ? 0 : scrollY;
+      return [Math.round((b.top + off) * 3), Math.round((b.bottom + off) * 3)]; }), !!s.view);
+    if (s.layers && lineRects.length) {
+      // split: <name>.png = article only, <name>_ko.png = the Korean lines alone on a transparent background
+      const shot = async (file, omit) => s.view ? page.screenshot({ path: file, omitBackground: omit })
+        : page.screenshot({ path: file, clip: { x: 0, y: 0, width: 360, height: h }, fullPage: true, omitBackground: omit });
+      await page.addStyleTag({ content: '.x-ln{visibility:hidden !important}' });
+      await shot(path.join(out, name + '.png'), false);
+      await page.addStyleTag({ content: 'html,body{background:transparent !important} body *{visibility:hidden !important} .x-ln{visibility:visible !important}' });
+      await shot(path.join(out, name + '_ko.png'), true);
+    }
+    console.log(name, JSON.stringify({ h: h * 3, ...info, rects, lines: lineRects }));
     await page.close();
   }
   await browser.close();

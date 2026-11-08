@@ -23,7 +23,8 @@ for i, s in enumerate(segs):
     f0, f1 = round(s['start'] * fps), round(end * fps)
     n = f1 - f0
     if s['type'] == 'pieces':
-        # each item: a clean horizontal slice [a,b] of a capture, shown whole on the 4:3 canvas with a blur fill
+        # each item: a clean horizontal slice [a,b] of a capture, shown whole on the 4:3 canvas with a blur fill;
+        # optional "ko": {"img": layer, "lines": [[y0,y1],...], "bounce": [[t0,t1,[line idx]]], "amp": px}
         items = s['items']
         wts = [it.get('w', 1) for it in items]
         alloc = [round(n * w / sum(wts)) for w in wts]
@@ -37,8 +38,28 @@ for i, s in enumerate(segs):
                   f"colorlevels=romax=0.82:gomax=0.82:bomax=0.82[bg];"
                   f"[f]{fg}[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]")
             o = os.path.join(segdir, f'seg{i:02d}_{k}.mp4')
-            run(['-loop', '1', '-framerate', str(fps), '-i', os.path.join(cap, it['img'] + '.png'),
-                 '-filter_complex', fc, '-map', '[v]', '-frames:v', str(m)] + ENC + [o])
+            ins = ['-loop', '1', '-framerate', str(fps), '-i', os.path.join(cap, it['img'] + '.png')]
+            ko = it.get('ko')
+            if ko:
+                # interlinear Korean layer (transparent PNG at the same coordinates): each line is overlaid on its own,
+                # and the lines being narrated bounce gently (abs(sin(2*pi*t)) = 2 hops per second)
+                kf = min(1, H / h)
+                fw, fh = round(W * kf), round(h * kf)
+                fx, fy = (W - fw) // 2, (H - fh) // 2
+                amp = ko.get('amp', 7)
+                fc = fc.replace(',format=yuv420p[v]', '[b0]')
+                fc += f";[1:v]crop={W}:{h}:0:{a},scale={fw}:{fh},format=rgba,split={len(ko['lines'])}" + \
+                      ''.join(f'[k{j}]' for j in range(len(ko['lines'])))
+                cur_l = 'b0'
+                for j, (y0, y1) in enumerate(ko['lines']):
+                    t0s = max(0, round((y0 - 8 - a) * kf)); t1s = min(fh, round((y1 + 8 - a) * kf))
+                    hops = '+'.join(f'between(t,{b0},{b1})' for b0, b1, idx in ko.get('bounce', []) if j in idx) or '0'
+                    fc += (f";[k{j}]crop={fw}:{t1s - t0s}:0:{t0s}[l{j}];"
+                           f"[{cur_l}][l{j}]overlay=x={fx}:y='{fy + t0s}-{amp}*abs(sin(2*PI*t))*min(1,{hops})':eval=frame[o{j}]")
+                    cur_l = f'o{j}'
+                fc += f";[{cur_l}]format=yuv420p[v]"
+                ins += ['-loop', '1', '-framerate', str(fps), '-i', os.path.join(cap, ko['img'] + '.png')]
+            run(ins + ['-filter_complex', fc, '-map', '[v]', '-frames:v', str(m)] + ENC + [o])
             parts.append(o)
         print('seg', i, 'pieces', alloc)
         continue

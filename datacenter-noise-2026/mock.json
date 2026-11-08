@@ -19,9 +19,9 @@
     "fs": 17,
     "overlay": true,
     "bg": 0,
-    "lh": 34,
     "box": false,
-    "weight": 500
+    "weight": 500,
+    "up": 7
    }
   ],
   "keep": [
@@ -31,6 +31,7 @@
    "mark": "quote",
    "top": 158
   },
-  "css": ".site-header__primary{background-color:rgb(27,57,106)!important}"
+  "css": ".site-header__primary{background-color:rgb(27,57,106)!important}",
+  "layers": true
  }
 }
