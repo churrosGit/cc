@@ -8,7 +8,10 @@
 //   pos "before" puts the translation above (use for images/tables).
 //   "lines": ["줄1 번역", ...] instead of "tr" writes the Korean under each English line (interlinear);
 //   "fs" sets its font size (CSS px, default 17). The English lines found are printed so the
-//   translations can be matched to them.
+//   translations can be matched to them. "overlay": true keeps the article's own line spacing, so the Korean
+//   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity (default 0.3).
+// spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
+//   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
 // Output: <name>.png (1080 wide) and prints mark rects in output pixels (x3) for piece planning.
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -52,12 +55,12 @@ const CSS = `
     // scroll through once so lazy images load, then back to top
     for (let y = 0; y < (s.h || 2400); y += 500) { await page.evaluate(v => window.scrollTo(0, v), y); await page.waitForTimeout(250); }
     await page.evaluate(() => window.scrollTo(0, 0));
-    await page.addStyleTag({ content: CSS + (s.hide || []).map(h => `${h}{display:none !important}`).join('\n') });
-    const info = await page.evaluate(([marks, COLORS]) => {
+    await page.addStyleTag({ content: CSS + (s.hide || []).map(h => `${h}{display:none !important}`).join('\n') + (s.css || '') });
+    const info = await page.evaluate(([marks, COLORS, keep]) => {
       // drop overlays: anything fixed/sticky (cookie banners, sticky headers, floating players)
       document.querySelectorAll('body *').forEach(e => {
         const cs = getComputedStyle(e);
-        if ((cs.position === 'fixed' || cs.position === 'sticky') && !e.querySelector('h1, article'))
+        if ((cs.position === 'fixed' || cs.position === 'sticky') && !e.querySelector('h1, article') && !(keep.length && e.matches(keep.join(','))))
           e.style.setProperty('display', 'none', 'important');
       });
       const missing = [];
@@ -73,9 +76,10 @@ const CSS = `
           // interlinear: open up the line spacing, then put the Korean for each English line right under it
           const fs = parseFloat(getComputedStyle(el).fontSize);
           const kfs = m.fs || 17;
-          el.style.setProperty('line-height', Math.round(fs * 1.2 + kfs * 1.25 - 2) + 'px', 'important');
+          if (m.lh) el.style.setProperty('line-height', m.lh + 'px', 'important');
+          if (!m.overlay) el.style.setProperty('line-height', Math.round(fs * 1.2 + kfs * 1.25 - 2) + 'px', 'important');
+          el.style.paddingBottom = Math.round(kfs * 0.9) + 'px';  // room for the last Korean line inside the box
           el.style.position = 'relative';
-          el.style.paddingBottom = Math.round(kfs * 0.9) + 'px';
           const words = [];
           const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
           while (walk.nextNode()) {
@@ -97,6 +101,7 @@ const CSS = `
             if (!m.lines[i]) return;
             const t = document.createElement('div'); t.className = 'x-ln'; t.textContent = m.lines[i];
             t.style.setProperty('--c', COLORS[m.color]); t.style.setProperty('--fs', kfs + 'px');
+            if (m.bg != null) t.style.background = `rgba(255,255,255,${m.bg})`;
             t.style.left = (l.left - eb.left - 4) + 'px'; t.style.top = (l.bottom - eb.top - 3) + 'px';
             el.appendChild(t);
           });
@@ -109,15 +114,25 @@ const CSS = `
         }
       }
       return { missing };
-    }, [s.marks || [], COLORS]);
+    }, [s.marks || [], COLORS, s.keep || []]);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(1000);
     const rects = await page.evaluate(() => {
       const r = {}; document.querySelectorAll('[data-kind]').forEach(e => {
         const b = e.getBoundingClientRect(); r[e.dataset.kind] = [Math.round((b.top + scrollY) * 3), Math.round((b.bottom + scrollY) * 3)]; });
       return r; });
-    const h = Math.min(s.h || 2400, await page.evaluate(() => document.documentElement.scrollHeight));
-    await page.screenshot({ path: path.join(out, name + '.png'), clip: { x: 0, y: 0, width: 360, height: h }, fullPage: true });
+    let h;
+    if (s.view) {
+      // phone-screen capture: scroll so the mark sits at view.top (CSS px) under the kept sticky header
+      await page.evaluate(([k, top]) => { const e = document.querySelector(`[data-kind="${k}"]`);
+        window.scrollTo(0, e.getBoundingClientRect().top + scrollY - top); }, [s.view.mark, s.view.top || 160]);
+      await page.waitForTimeout(800);
+      h = 780;
+      await page.screenshot({ path: path.join(out, name + '.png') });
+    } else {
+      h = Math.min(s.h || 2400, await page.evaluate(() => document.documentElement.scrollHeight));
+      await page.screenshot({ path: path.join(out, name + '.png'), clip: { x: 0, y: 0, width: 360, height: h }, fullPage: true });
+    }
     console.log(name, JSON.stringify({ h: h * 3, ...info, rects }));
     await page.close();
   }

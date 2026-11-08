@@ -16,8 +16,19 @@
      "그런데 소리가 진동처럼 울리는 게",
      "집 전체에서 느껴져요."
     ],
-    "fs": 17
+    "fs": 17,
+    "overlay": true,
+    "bg": 0.55,
+    "lh": 34
    }
-  ]
+  ],
+  "keep": [
+   ".site-header__primary"
+  ],
+  "view": {
+   "mark": "quote",
+   "top": 158
+  },
+  "css": ".site-header__primary{background-color:rgb(27,57,106)!important}"
  }
 }
