@@ -181,3 +181,4 @@ export function toScreen(v, camera, w, h, viewport = [0, 0, w, h]) {
   return [viewport[0] + (p.x + 1) / 2 * viewport[2], viewport[1] + (1 - p.y) / 2 * viewport[3]];
 }
 export function worldOf(obj, local) { obj.updateWorldMatrix(true, false); return local.clone().applyMatrix4(obj.matrixWorld); }
+export { gearPts, pawlPts, hexPts, circlePts };

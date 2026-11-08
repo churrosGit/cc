@@ -1,5 +1,6 @@
 """Original BGM + SFX, synthesized from scratch with numpy (no samples, no third-party audio).
-Usage: python3 make_audio.py events.json audio.wav"""
+Usage: python3 make_audio.py events.json audio.wav [narration_44k_mono.wav]
+With a narration file the BGM is ducked under the voice and the voice leads the mix."""
 import json, sys, wave
 import numpy as np
 
@@ -95,7 +96,21 @@ for c in ev['taps']: add(sfx, Tp, c, 0.6)
 for c in (4.15, 14.65): add(sfx, whoosh(0.7), c, 0.25)
 add(sfx, whoosh(1.2), 15.5, 0.18)
 
-mix = music / (np.max(np.abs(music)) + 1e-9) * 0.5 + sfx / (np.max(np.abs(sfx)) + 1e-9) * 0.62
+music = music / (np.max(np.abs(music)) + 1e-9)
+sfx = sfx / (np.max(np.abs(sfx)) + 1e-9)
+if len(sys.argv) > 3:
+    with wave.open(sys.argv[3]) as w:
+        assert w.getframerate() == SR and w.getnchannels() == 1
+        v = np.frombuffer(w.readframes(w.getnframes()), np.int16) / 32768.0
+    voice = np.zeros(N); voice[:min(N, len(v))] = v[:N]
+    voice /= np.max(np.abs(voice)) + 1e-9
+    # sidechain: smoothed voice envelope -> duck music by up to ~11 dB
+    k = int(0.25 * SR); c = np.concatenate([[0], np.cumsum(np.abs(voice))]); env = np.zeros(N); lo = np.clip(np.arange(N) - k // 2, 0, N); hi = np.clip(np.arange(N) + k // 2, 0, N); env = (c[hi] - c[lo]) / k
+    env = np.clip(env / (np.percentile(env[env > 1e-4], 60) + 1e-9), 0, 1)
+    duck = 1 - 0.72 * env
+    mix = 0.88 * voice + 0.30 * music * duck + 0.42 * sfx
+else:
+    mix = music * 0.5 + sfx * 0.62
 mix = np.tanh(mix * 1.1) / np.tanh(1.1)
 mix = mix[:int(SR * DUR)]
 mix = mix / np.max(np.abs(mix)) * 0.89
