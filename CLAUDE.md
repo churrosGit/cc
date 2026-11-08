@@ -45,6 +45,10 @@
 - 기본 에셋: `shorts-assets/memes/pepe/` (감정별 목록은 그 폴더의 README).
 - 4:3 영역 가운데에 비율을 유지한 채 약 95%까지 꽉 채우고, 남는 공간은 블러필로 채웁니다.
 
+## 효과음
+
+- 기본 에셋: `shorts-assets/sfx/` (장면별 추천 목록은 그 폴더의 README).
+
 ## 도구
 
 - 제작 프로그램과 사용법은 `shorts-kit/README.md`에 있습니다.
