@@ -1,4 +1,4 @@
-"""Seamless 8 s loop audio: original BGM (120 BPM, 4 bars = 8 s) + ratchet clicks + spanner taps.
+"""Seamless loop audio (loop length from events.json): original BGM (120 BPM, 4 bars = 8 s) + ratchet clicks + spanner taps.
 Rendered over three loop periods and the middle one is kept, so tails wrap across the seam.
 Usage: python3 loop_audio.py events.json out.wav"""
 import json, sys, wave
@@ -15,8 +15,8 @@ note = lambda m: 440 * 2 ** ((m - 69) / 12)
 beat = 0.5; PROG = [([57, 60, 64, 67], 45), ([53, 57, 60, 64], 41), ([48, 55, 60, 64], 36), ([55, 59, 62, 67], 43)]
 for rep in range(3):
     t0 = rep * P
-    for b, (ch, root) in enumerate(PROG):
-        tb = t0 + b * 4 * beat
+    for b in range(int(round(P / (4 * beat)))):            # fill the whole loop with 4-bar progressions
+        ch, root = PROG[b % 4]; tb = t0 + b * 4 * beat
         n = int(4 * beat * SR * 1.15); tt = t_(n); e = np.minimum(1, tt / 0.25) * np.exp(-tt * 0.9)
         add(buf, sum(np.sin(2 * np.pi * note(m) * tt) + 0.5 * np.sin(2 * np.pi * note(m) * 1.003 * tt) for m in ch) * e / 9, tb)
         for k in range(16):                       # soft 16th pluck
