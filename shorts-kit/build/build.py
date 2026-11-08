@@ -1,7 +1,7 @@
 """Builds a capture-based shorts video.
 Usage: python3 build.py <projectDir> <capDir> <narration.wav> <out.mp4>
 <projectDir> holds plan.json and txt/ (from ov_render.js); <capDir> holds the capture PNGs named in plan.json.
-Segment types: pieces, montage, text, img, split, video. plan["audio"] mixes extra sounds over the narration."""
+Segment types: pieces, montage, text, img, split, video, meme. plan["audio"] mixes extra sounds over the narration."""
 import json, os, subprocess, sys
 
 d, cap, audio, out = sys.argv[1:5]
@@ -62,6 +62,20 @@ for i, s in enumerate(segs):
              '-frames:v', str(n)] + ENC + [o])
         parts.append(o)
         print('seg', i, 'video', n, 'frames')
+        continue
+    if s['type'] == 'meme':
+        # meme image centered, aspect kept, scaled to about 95% of the 4:3 area, blur fill behind
+        src = s['src'] if os.path.isabs(s['src']) else os.path.join(d, s['src'])
+        mw, mh = round(W * 0.95), round(H * 0.95)
+        fc = (f"[0:v]split[f][g];"
+              f"[g]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},gblur=sigma=34,"
+              f"colorlevels=romax=0.82:gomax=0.82:bomax=0.82[bg];"
+              f"[f]scale={mw}:{mh}:force_original_aspect_ratio=decrease:flags=lanczos[fg];"
+              f"[bg][fg]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]")
+        run(['-loop', '1', '-framerate', str(fps), '-i', src, '-filter_complex', fc, '-map', '[v]',
+             '-frames:v', str(n)] + ENC + [o])
+        parts.append(o)
+        print('seg', i, 'meme', n, 'frames')
         continue
     if s['type'] == 'text':
         still(os.path.join(d, 'txt', f'card{i}.png'), n, o, 'null')

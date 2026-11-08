@@ -26,10 +26,10 @@ bh = lh * len(lines) + 36
 gap_top, gap_bot = 27, 30
 band = Image.new('RGB', (W, gap_top + bh + gap_bot), (0, 0, 0))
 bd = ImageDraw.Draw(band)
-# translucent blurred note box (on the black tweet background a light tint reads as frosted glass)
-bd.rounded_rectangle((157, gap_top, 157 + bw, gap_top + bh), radius=18, fill=(58, 58, 58))
+# nearly see-through note box: 12% white over the black tweet background, text in the mark color
+bd.rounded_rectangle((157, gap_top, 157 + bw, gap_top + bh), radius=18, fill=(31, 31, 31))
 for i, t in enumerate(lines):
-    bd.text((157 + 30, gap_top + 18 + i * lh + 4), t, font=f, fill='white')
+    bd.text((157 + 30, gap_top + 18 + i * lh + 4), t, font=f, fill=RED)
 o = Image.new('RGB', (W, top.height + band.height + rest.height))
 o.paste(top, (0, 0)); o.paste(band, (0, top.height)); o.paste(rest, (0, top.height + band.height))
 o.save(out)

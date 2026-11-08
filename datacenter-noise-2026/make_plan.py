@@ -8,6 +8,9 @@ import json, os, subprocess, sys
 
 narr, video, work = sys.argv[1:4]
 here = os.path.dirname(os.path.abspath(__file__))
+ASSETS = os.path.join(os.path.dirname(here), 'shorts-assets')
+MEMES = os.path.join(ASSETS, 'memes', 'pepe') + '/'
+SFX = os.path.join(ASSETS, 'sfx')
 os.makedirs(work, exist_ok=True)
 
 GAP_AT, GAP = 3.2, 2.0      # inside the 2.90-3.46 pause after sentence 1
@@ -51,11 +54,14 @@ b = {
     's8b': T(34.06 + 1.0),            # 6abc headline 1 s, then the quote
     's9': T((36.27 + 36.77) / 2),
     's10': T((40.46 + 41.11) / 2),
+    'm1': T(7.0),                     # "웅 하는 기계 소리가 끊이지 않습니다" -> speechless pepe
+    'm2': T(38.65),                   # "그냥 집을 나가버린다고" -> crying pepe
 }
 CLIP2_FROM = 6.8  # the clip's houses part for the ending
 segments = [
     {"start": 0.0, "type": "pieces", "items": [{"img": "tw1", "y": [20, 500]}]},
     {"start": b['s2'], "type": "video", "src": video, "from": 0},
+    {"start": b['m1'], "type": "meme", "src": MEMES + "speechless.jpg"},
     {"start": b['s3'], "type": "pieces", "items": [{"img": "pbs1", "y": [0, 1030]}]},
     {"start": b['s3b'], "type": "pieces", "items": [{"img": "pbs1", "y": [1300, 2240]}]},
     {"start": b['s4'], "type": "pieces", "items": [{"img": "pbs2", "y": [3200, 4530]}]},
@@ -64,8 +70,9 @@ segments = [
     {"start": b['s6'], "type": "pieces", "items": [{"img": "nbc1", "y": [330, 1240]}]},
     {"start": b['s7'], "type": "pieces", "items": [{"img": "nbc1", "y": [3850, 4700]}]},
     {"start": b['s8'], "type": "pieces", "items": [{"img": "abc1", "y": [0, 690]}]},
-    {"start": b['s8b'], "type": "pieces", "items": [{"img": "abc1", "y": [4250, 4830]}]},
+    {"start": b['s8b'], "type": "pieces", "items": [{"img": "abc1", "y": [4300, 4850]}]},
     {"start": b['s9'], "type": "pieces", "items": [{"img": "wftv1", "y": [60, 850]}]},
+    {"start": b['m2'], "type": "meme", "src": MEMES + "crying.jpg"},
     {"start": b['s10'], "type": "video", "src": video, "from": CLIP2_FROM},
 ]
 
@@ -78,6 +85,24 @@ audio = [
     {"src": os.path.join(work, 'noise.wav'), "at": s10_start, "from": CLIP2_FROM, "dur": round(narr_end - s10_start, 2), "gain_db": -2, "fade": 0.25},
     {"src": os.path.join(work, 'noise.wav'), "at": narr_end - 0.1, "from": round(CLIP2_FROM + narr_end - 0.1 - s10_start, 2), "dur": round(DUR - narr_end + 0.1, 2), "gain_db": 6, "fade": 0.15},
 ]
+
+# sound effect at every scene change: whooshes in turn, a reaction sound on the two meme cuts.
+# gain brings each whoosh's loudest 100 ms to about -15 dB so it is clearly heard (narration is about -17 dB); 'peak' is where the
+# whoosh peaks inside the file, so it is started early enough to peak on the cut.
+WHOOSH = [("098_후욱 -b중간2.wav", -8.7, 0.30, 0.75), ("041_바람.mp3", -10.3, 0.27, 0.72),
+          ("096_후욱 -a짧은2.mp3", -15.5, 0.13, 0.37), ("070_휘익.mp3", -10.2, 0.42, 1.06)]
+REACT = {"m1": ("074_어이없는 웃음소리.mp3", -11.7, 0.15, 2.0, -18),
+         "m2": ("019_퓨히익.mp3", -16.7, 0.85, 1.5, -16)}
+k = 0
+for seg in segments[1:]:
+    t = seg['start']
+    key = next((m for m in REACT if abs(b[m] - t) < 1e-6), None)
+    if key:
+        f, loud, frm, dur, target = REACT[key]
+        audio.append({"src": os.path.join(SFX, f), "at": t, "from": frm, "dur": dur, "gain_db": round(target - loud, 1), "fade": 0.1})
+    else:
+        f, loud, peak, dur = WHOOSH[k % len(WHOOSH)]; k += 1
+        audio.append({"src": os.path.join(SFX, f), "at": round(max(t - peak, 0), 2), "from": 0, "dur": dur, "gain_db": round(-15 - loud, 1), "fade": 0.03})
 
 subs = [
     [0.27, "미국 민주당이 이번 선거에서<br>이긴 이유라는 영상입니다"],

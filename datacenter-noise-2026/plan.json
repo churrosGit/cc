@@ -25,6 +25,11 @@
    "from": 0
   },
   {
+   "start": 9.0,
+   "type": "meme",
+   "src": "/home/user/cc/shorts-assets/memes/pepe/speechless.jpg"
+  },
+  {
    "start": 11.09,
    "type": "pieces",
    "items": [
@@ -135,8 +140,8 @@
     {
      "img": "abc1",
      "y": [
-      4250,
-      4830
+      4300,
+      4850
      ]
     }
    ]
@@ -153,6 +158,11 @@
      ]
     }
    ]
+  },
+  {
+   "start": 40.65,
+   "type": "meme",
+   "src": "/home/user/cc/shorts-assets/memes/pepe/crying.jpg"
   },
   {
    "start": 42.78,
@@ -193,6 +203,118 @@
    "dur": 1.54,
    "gain_db": 6,
    "fade": 0.15
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
+   "at": 2.9,
+   "from": 0,
+   "dur": 0.75,
+   "gain_db": -6.3,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/074_어이없는 웃음소리.mp3",
+   "at": 9.0,
+   "from": 0.15,
+   "dur": 2.0,
+   "gain_db": -6.3,
+   "fade": 0.1
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
+   "at": 10.82,
+   "from": 0,
+   "dur": 0.72,
+   "gain_db": -4.7,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/096_후욱 -a짧은2.mp3",
+   "at": 12.87,
+   "from": 0,
+   "dur": 0.37,
+   "gain_db": 0.5,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
+   "at": 15.22,
+   "from": 0,
+   "dur": 1.06,
+   "gain_db": -4.8,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
+   "at": 21.26,
+   "from": 0,
+   "dur": 0.75,
+   "gain_db": -6.3,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
+   "at": 22.96,
+   "from": 0,
+   "dur": 0.72,
+   "gain_db": -4.7,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/096_후욱 -a짧은2.mp3",
+   "at": 28.85,
+   "from": 0,
+   "dur": 0.37,
+   "gain_db": 0.5,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
+   "at": 30.95,
+   "from": 0,
+   "dur": 1.06,
+   "gain_db": -4.8,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
+   "at": 35.47,
+   "from": 0,
+   "dur": 0.75,
+   "gain_db": -6.3,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
+   "at": 36.79,
+   "from": 0,
+   "dur": 0.72,
+   "gain_db": -4.7,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/096_후욱 -a짧은2.mp3",
+   "at": 38.39,
+   "from": 0,
+   "dur": 0.37,
+   "gain_db": 0.5,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/019_퓨히익.mp3",
+   "at": 40.65,
+   "from": 0.85,
+   "dur": 1.5,
+   "gain_db": 0.7,
+   "fade": 0.1
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
+   "at": 42.36,
+   "from": 0,
+   "dur": 1.06,
+   "gain_db": -4.8,
+   "fade": 0.03
   }
  ],
  "subs": [
