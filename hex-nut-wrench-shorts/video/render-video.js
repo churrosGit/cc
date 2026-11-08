@@ -7,7 +7,7 @@ const srv = http.createServer((q, s) => { const f = path.join(__dirname, decodeU
   fs.readFile(f, (e, d) => { if (e) { s.writeHead(404); s.end(); } else { s.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' }); s.end(d); } }); })
 .listen(0, async () => {
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+  const page = await browser.newPage({ viewport: { width: +(process.env.VW || 1080), height: +(process.env.VH || 1920) } });
   page.on('pageerror', e => console.log('[error]', e.message));
   await page.goto(`http://localhost:${srv.address().port}/${process.env.PAGE || 'video.html'}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.__done === true, null, { timeout: 120000 });

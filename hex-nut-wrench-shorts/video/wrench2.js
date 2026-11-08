@@ -98,9 +98,9 @@ export function ratchetWrench(o = {}) {
 // handle (+x), and a coil spring. Exposes the joints and kinematic constants like scene3d.ratchet().
 import { P, gearPts, pawlPts } from './scene3d.js';
 export function ratchetWrenchCut(o = {}) {
-  const R1 = o.R1 ?? 2.35, R2 = o.R2 ?? 2.5, L = o.L ?? 11.6, w = o.w ?? 0.98, rf = o.rf ?? 1.5, H = o.H ?? 0.7;
+  const R1 = o.R1 ?? 2.45, R2 = o.R2 ?? 2.55, L = o.L ?? 11.8, w = o.w ?? 0.98, rf = o.rf ?? 1.5, H = o.H ?? 0.7;
   const n = o.n ?? 20, rt = o.rt ?? 1.7, rr = rt - (o.depth ?? 0.32), m = 2, s = 360 / n, rot = 0.37 * s;
-  const rOut = rt + 0.2, rSpring = rt + 0.44, rPocket = rSpring + 0.05;
+  const rOut = rt + 0.12, rSpring = rt + 0.56, rPocket = rSpring + 0.05;
   const chrome = o.chrome || new THREE.MeshStandardMaterial({ color: 0xc9ced6, metalness: 1, roughness: 0.27 });
   const coverM = o.coverM || chrome;
   const black = o.black || new THREE.MeshStandardMaterial({ color: 0x16181c, metalness: 0.6, roughness: 0.42 });
@@ -110,7 +110,9 @@ export function ratchetWrenchCut(o = {}) {
   const g = new THREE.Group(), parts = {};
   const add = (k, m) => { m.castShadow = m.receiveShadow = true; g.add(m); if (k) parts[k] = m; return m; };
   const K = Math.round((0 + m * s / 2 - rot) / s), aEnd = rot + K * s;           // pawl centred on +x
-  const pw = pawlPts(rr, rt, s, rot, aEnd, m, rOut);
+  const pw = pawlPts(rr + 0.018, rt + 0.018, s, rot, aEnd, m, rOut);
+  { const e = 0.35 * Math.PI / 180, c = Math.cos(e), sn = Math.sin(e);     // hairline gap at the contact face
+    pw.pts = pw.pts.map(q => new THREE.Vector2(q.x * c - q.y * sn, q.x * sn + q.y * c)); }
   const a1 = pw.A0 - s * 0.7, a2 = aEnd + s * 0.9;
   const cavity = () => { const pts = [];
     for (let i = 0; i <= 140; i++) pts.push(P(rt + 0.02, a2 + (360 - (a2 - a1)) * i / 140));
@@ -130,20 +132,16 @@ export function ratchetWrenchCut(o = {}) {
   // head 2: closed black 12-point insert
   const g2 = new THREE.Shape(ring(R2 * 0.74 - 0.01)); g2.holes.push(new THREE.Path(twelvePoint(o.bore2 ?? 1.3).reverse()));
   const gm2 = add('gear2', new THREE.Mesh(extrude(g2, H - 0.16, 0.025, 2), black)); gm2.position.set(L, 0, 0.07);
-  // pawl on a pivot
-  const pivotA = pw.A0 + s * 0.3, pv = P(rOut - 0.14, pivotA);
-  const pg = new THREE.Group(); pg.position.set(pv.x, pv.y, 0); g.add(pg); parts.pawlPivot = pg;
+  // sliding pawl: slides radially (along its mid-angle) in the pocket, pushed back by the spring
+  const midA = (pw.A0 + aEnd) / 2, dir = P(1, midA);
+  const pg = new THREE.Group(); g.add(pg); parts.pawlPivot = pg;
   const pm = new THREE.Mesh(extrude(new THREE.Shape(pw.pts), H - 0.24, 0.01, 1), pawlM); pm.castShadow = pm.receiveShadow = true;
-  pm.position.set(-pv.x, -pv.y, 0.11); pg.add(pm); parts.pawl = pm;
-  const pin = add('pin', new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, H - 0.1, 24), pinM)); pin.rotation.x = Math.PI / 2; pin.position.set(pv.x, pv.y, H / 2);
+  pm.position.z = 0.11; pg.add(pm); parts.pawl = pm;
   // spring
   const sA = aEnd - m * s * 0.3, p1 = P(rSpring, sA), p2 = P(rOut, sA), Ls = p1.distanceTo(p2), zc = 0.11 + (H - 0.24) / 2, cp = [];
   for (let i = 0; i <= 150; i++) { const t = i / 150, an = t * 5 * 2 * Math.PI; cp.push(new THREE.Vector3(t * Ls, 0.08 * Math.cos(an), zc + 0.08 * Math.sin(an))); }
   const sg = new THREE.Group(); sg.position.set(p1.x, p1.y, 0); sg.rotation.z = Math.atan2(p2.y - p1.y, p2.x - p1.x); g.add(sg); parts.springGroup = sg;
   const spm = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cp), 200, 0.02, 8), springM); spm.castShadow = true; sg.add(spm); parts.spring = spm;
-  const tooth = P(rt - (rt - rr) / 2, aEnd - s * 0.5), arm = tooth.distanceTo(pv);
-  const rotAbout = (q, a) => { const c = Math.cos(a), sn = Math.sin(a), dx = q.x - pv.x, dy = q.y - pv.y; return new THREE.Vector2(pv.x + dx * c - dy * sn, pv.y + dx * sn + dy * c); };
-  const pawlSign = rotAbout(tooth, 0.01).length() > tooth.length() ? 1 : -1;
   // rivets, reversing-lever tips, stamps
   const rivGeo = new THREE.SphereGeometry(0.18, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2.4);
   for (const x of [R1 + 0.6, R1 + 2.6, L - R2 - 2.6, L - R2 - 0.6]) for (const up of [1, -1]) {
@@ -155,8 +153,31 @@ export function ratchetWrenchCut(o = {}) {
   const decal = (txt, x, size, rotz) => { const mm = new THREE.Mesh(new THREE.PlaneGeometry(size * 2, size / 2), new THREE.MeshStandardMaterial({ map: stampTexture(txt), transparent: true, metalness: 0.6, roughness: 0.5, polygonOffset: true, polygonOffsetFactor: -2 }));
     mm.position.set(x, 0, H + 0.006); mm.rotation.z = rotz; g.add(mm); };
   decal('10', R1 + 1.6, 0.8, -Math.PI / 2); decal('13', L - R2 - 1.6, 0.8, -Math.PI / 2); decal('CR-V', L / 2, 1.05, 0);
+  // collision-based pawl angle: smallest rotation about the pivot that keeps pawl and gear apart
+  const sawRm = (a) => { const u = ((((a - rot) % s) + s) % s) / s; return rt - (rt - rr) * u; };
+  const insideGear = (x, y) => { const r = Math.hypot(x, y); if (r > rt + 1e-4) return false; const a = -Math.atan2(y, x) * 180 / Math.PI; return r < sawRm(a) - 1e-4; };
+  const tips = [...Array(n)].map((_, k) => P(rt, rot + k * s));
+  const inPoly = (x, y, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j]; if (((a.y > y) !== (b.y > y)) && (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) c = !c; } return c; };
+  const pawlPoly = pw.pts;
+  function collides(d, relDeg) {               // relDeg = gear rotation relative to the body (math degrees, ccw +)
+    const gr = -relDeg * Math.PI / 180, cg = Math.cos(gr), sg = Math.sin(gr);
+    const poly = pawlPoly.map(q => new THREE.Vector2(q.x + dir.x * d, q.y + dir.y * d));
+    for (const q of poly) { const gx = q.x * cg - q.y * sg, gy = q.x * sg + q.y * cg; if (insideGear(gx, gy)) return true; }
+    const cb = Math.cos(-gr), sb = Math.sin(-gr), c0 = P(rt, midA);
+    for (const t of tips) { const bx = t.x * cb - t.y * sb, by = t.x * sb + t.y * cb; if (Math.hypot(bx - c0.x, by - c0.y) < 1.0 && inPoly(bx, by, poly)) return true; }
+    return false;
+  }
+  function pawlLift(relDeg) {
+    if (!collides(0, relDeg)) return 0;
+    let d = 0; while (d < 0.6 && collides(d, relDeg)) d += 0.004;
+    let lo = Math.max(0, d - 0.004), hi = d; for (let i = 0; i < 8; i++) { const mid = (lo + hi) / 2; if (collides(mid, relDeg)) lo = mid; else hi = mid; }
+    return hi + 0.004;
+  }
+  const setPawl = (d) => { pg.position.set(dir.x * d, dir.y * d, 0);
+    const q = new THREE.Vector2(p2.x + dir.x * d, p2.y + dir.y * d); sg.scale.x = q.distanceTo(p1) / Ls; };
   const zt = H - 0.13;
-  g.userData = { R1, R2, L, H, s, depth: rt - rr, pawlSign, arm, springArm: p2.distanceTo(pv), springLen: Ls, parts,
+  g.userData = { pawlLift, setPawl, R1, R2, L, H, s, depth: rt - rr, springLen: Ls, parts,
     anchors: { pawl: new THREE.Vector3(...P((rt + rOut) / 2, (pw.A0 + aEnd) / 2).toArray(), zt),
       spring: new THREE.Vector3(...P((rOut + rSpring) / 2, sA).toArray(), zc + 0.1),
       gear: a => new THREE.Vector3(...P(rt - 0.06, a).toArray(), zt), bore: new THREE.Vector3(...P(1.3, 200).toArray(), zt) } };

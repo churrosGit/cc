@@ -235,10 +235,7 @@ window.renderAt = function (t) {
     pivot.rotation.z = (-TW + st.h) * D;
     P_.gear.rotation.z = (st.g - st.h) * D;
     nutR.rotation.z = (st.g - TW) * D;
-    let u = ((rel / U.s) % 1 + 1) % 1; if (u > 0.9995) u = 0;
-    const lift = U.depth * 1.06 * u;
-    P_.pawlPivot.rotation.z = U.pawlSign * Math.asin(clamp(lift / U.arm, -1, 1));
-    P_.springGroup.scale.x = (U.springLen - lift * U.springArm / U.arm) / U.springLen;
+    U.setPawl(U.pawlLift(st.g - st.h));
     // cover: lifts off in the parts intro, settles back for the outro
     const cv = smooth((t - 20.3) / 1.7) * (1 - smooth((t - 56.0) / 1.5));
     P_.cover.position.z = U.H - 0.1 + cv * 3.4; M.cover.opacity = 1 - cv; P_.cover.visible = cv < 0.999;
