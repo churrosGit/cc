@@ -24,7 +24,7 @@ for i, s in enumerate(segs):
     n = f1 - f0
     if s['type'] == 'pieces':
         # each item: a clean horizontal slice [a,b] of a capture, shown whole on the 4:3 canvas with a blur fill;
-        # optional "ko": {"img": layer, "lines": [[y0,y1],...], "bounce": [[t0,t1,[line idx]]], "amp": px}
+        # optional "ko": {"img": layer, "lines": [[y0,y1,x0,x1],...], "bounce": [[t0,t1,[line idx]]], "pop": 0.08}
         items = s['items']
         wts = [it.get('w', 1) for it in items]
         alloc = [round(n * w / sum(wts)) for w in wts]
@@ -42,20 +42,29 @@ for i, s in enumerate(segs):
             ko = it.get('ko')
             if ko:
                 # interlinear Korean layer (transparent PNG at the same coordinates): each line is overlaid on its own,
-                # and the lines being narrated bounce gently (abs(sin(2*pi*t)) = 2 hops per second)
+                # and the lines being narrated pop out toward the viewer: they grow by up to 'pop' (default 8%)
+                # around their own centre, abs(sin(2*pi*t)) = 2 pops per second
                 kf = min(1, H / h)
                 fw, fh = round(W * kf), round(h * kf)
                 fx, fy = (W - fw) // 2, (H - fh) // 2
-                amp = ko.get('amp', 7)
+                pop = ko.get('pop', 0.08)
+                n_l = len(ko['lines'])
                 fc = fc.replace(',format=yuv420p[v]', '[b0]')
-                fc += f";[1:v]crop={W}:{h}:0:{a},scale={fw}:{fh},format=rgba,split={len(ko['lines'])}" + \
-                      ''.join(f'[k{j}]' for j in range(len(ko['lines'])))
+                fc += f";[1:v]crop={W}:{h}:0:{a},scale={fw}:{fh},format=rgba,split={n_l}" + ''.join(f'[k{j}]' for j in range(n_l))
                 cur_l = 'b0'
-                for j, (y0, y1) in enumerate(ko['lines']):
-                    t0s = max(0, round((y0 - 8 - a) * kf)); t1s = min(fh, round((y1 + 8 - a) * kf))
-                    hops = '+'.join(f'between(t,{b0},{b1})' for b0, b1, idx in ko.get('bounce', []) if j in idx) or '0'
-                    fc += (f";[k{j}]crop={fw}:{t1s - t0s}:0:{t0s}[l{j}];"
-                           f"[{cur_l}][l{j}]overlay=x={fx}:y='{fy + t0s}-{amp}*abs(sin(2*PI*t))*min(1,{hops})':eval=frame[o{j}]")
+                for j, ln in enumerate(ko['lines']):
+                    y0, y1 = ln[0], ln[1]
+                    x0, x1 = (ln[2], ln[3]) if len(ln) > 3 else (0, W)
+                    ty0 = max(0, round((y0 - 8 - a) * kf)); ty1 = min(fh, round((y1 + 8 - a) * kf))
+                    tx0 = max(0, round((x0 - 12) * kf)); tx1 = min(fw, round((x1 + 12) * kf))
+                    sw, sh = tx1 - tx0, ty1 - ty0
+                    cx, cy = fx + tx0 + sw / 2, fy + ty0 + sh / 2
+                    act = '+'.join(f'between(t,{b0},{b1})' for b0, b1, idx in ko.get('bounce', []) if j in idx)
+                    fc += f";[k{j}]crop={sw}:{sh}:{tx0}:{ty0}"
+                    if act:
+                        f = f"(1+{pop}*abs(sin(2*PI*t))*min(1,{act}))"
+                        fc += f",scale=w='trunc(iw*{f}/2)*2':h=-2:eval=frame:flags=bicubic"
+                    fc += f"[l{j}];[{cur_l}][l{j}]overlay=x='{cx:.1f}-w/2':y='{cy:.1f}-h/2':eval=frame[o{j}]"
                     cur_l = f'o{j}'
                 fc += f";[{cur_l}]format=yuv420p[v]"
                 ins += ['-loop', '1', '-framerate', str(fps), '-i', os.path.join(cap, ko['img'] + '.png')]

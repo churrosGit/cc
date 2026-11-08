@@ -14,7 +14,7 @@
 // spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
 //   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
 //   "layers": true also writes <name>_ko.png (Korean lines only, transparent) and keeps them out of <name>.png,
-//   so build.py can animate single lines; the printed "lines" are their [top, bottom] in output px.
+//   so build.py can animate single lines; the printed "lines" are their [top, bottom, left, right] in output px.
 // Output: <name>.png (1080 wide) and prints mark rects in output pixels (x3) for piece planning.
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -144,7 +144,7 @@ const CSS = `
     // line rects of the interlinear Korean (output px, relative to the saved image)
     const lineRects = await page.evaluate(view => [...document.querySelectorAll('.x-ln')].map(e => {
       const b = e.getBoundingClientRect(); const off = view ? 0 : scrollY;
-      return [Math.round((b.top + off) * 3), Math.round((b.bottom + off) * 3)]; }), !!s.view);
+      return [Math.round((b.top + off) * 3), Math.round((b.bottom + off) * 3), Math.round(b.left * 3), Math.round(b.right * 3)]; }), !!s.view);
     if (s.layers && lineRects.length) {
       // split: <name>.png = article only, <name>_ko.png = the Korean lines alone on a transparent background
       const shot = async (file, omit) => s.view ? page.screenshot({ path: file, omitBackground: omit })
