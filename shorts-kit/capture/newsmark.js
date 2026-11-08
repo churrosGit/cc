@@ -10,7 +10,7 @@
 //   "fs" sets its font size (CSS px, default 17). The English lines found are printed so the
 //   translations can be matched to them. "overlay": true keeps the article's own line spacing, so the Korean
 //   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity
-//   (default 0.3, 0 = no background or blur); "pad": background margin in CSS px (default 4); "up": CSS px the Korean moves up into its own line (default 3); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
+//   (default 0.3, 0 = no background or blur); "pad": background margin in CSS px (default 4; 0 = hugs the glyph ink); "up": CSS px the Korean moves up into its own line (default 3); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
 // spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
 //   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
 //   "layers": true also writes <name>_ko.png (Korean lines only, transparent) and keeps them out of <name>.png,
@@ -111,6 +111,7 @@ const CSS = `
             else if (m.bg != null) t.style.background = `rgba(255,255,255,${m.bg})`;
             if (m.weight) t.style.fontWeight = m.weight;
             if (m.pad != null) { t.style.padding = m.pad + 'px'; t.style.borderRadius = '0'; }
+            if (m.pad === 0) t.classList.add('x-tight');
             t.style.left = (l.left - eb.left - (m.pad ?? 4)) + 'px'; t.style.top = (l.bottom - eb.top - (m.up ?? 3)) + 'px';
             el.appendChild(t);
           });
@@ -126,6 +127,30 @@ const CSS = `
     }, [s.marks || [], COLORS, s.keep || []]);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(1000);
+    // "pad": 0 -> shrink each Korean line's background to the ink of its glyphs (no space above, below or at the sides)
+    await page.evaluate(() => {
+      const ctx = document.createElement('canvas').getContext('2d');
+      document.querySelectorAll('.x-ln.x-tight').forEach(t => {
+        const cs = getComputedStyle(t);
+        ctx.font = `${cs.fontWeight} ${cs.fontSize} PretendardX`;
+        ctx.letterSpacing = cs.letterSpacing;
+        const mt = ctx.measureText(t.textContent);
+        const A = mt.actualBoundingBoxAscent, D = mt.actualBoundingBoxDescent;
+        const L = mt.actualBoundingBoxLeft, R = mt.actualBoundingBoxRight;
+        const probe = document.createElement('span'); probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+        t.appendChild(probe);
+        const tb = t.getBoundingClientRect(), base = probe.getBoundingClientRect().bottom - tb.top;
+        probe.remove();
+        const txt = t.textContent; t.textContent = '';
+        const inner = document.createElement('span'); inner.textContent = txt;
+        inner.style.cssText = `position:absolute;left:${L}px;top:${A - base}px;white-space:nowrap`;
+        t.appendChild(inner);
+        t.style.top = (parseFloat(t.style.top) + base - A) + 'px';
+        t.style.left = (parseFloat(t.style.left) - L) + 'px';
+        t.style.width = (L + R) + 'px'; t.style.height = (A + D) + 'px';
+      });
+    });
+    await page.waitForTimeout(300);
     const rects = await page.evaluate(() => {
       const r = {}; document.querySelectorAll('[data-kind]').forEach(e => {
         const b = e.getBoundingClientRect(); r[e.dataset.kind] = [Math.round((b.top + scrollY) * 3), Math.round((b.bottom + scrollY) * 3)]; });
