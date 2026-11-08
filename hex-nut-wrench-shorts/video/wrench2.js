@@ -3,7 +3,12 @@
 // Built in the same local XY / +Z-up convention as scene3d.js; head 1 (the one on the nut) is at the origin.
 import * as THREE from 'three';
 
-const extrude = (sh, depth, bevel = 0.05, seg = 3) => new THREE.ExtrudeGeometry(sh, {
+function fixWinding(sh) {
+  const outer = sh.getPoints(64); if (THREE.ShapeUtils.isClockWise(outer)) { const p = outer.slice().reverse(); const ns = new THREE.Shape(p); ns.holes = sh.holes; sh = ns; }
+  sh.holes = sh.holes.map(h => { const hp = h.getPoints(64); return new THREE.Path(THREE.ShapeUtils.isClockWise(hp) ? hp : hp.slice().reverse()); });
+  return sh;
+}
+const extrude = (sh, depth, bevel = 0.05, seg = 3) => new THREE.ExtrudeGeometry(fixWinding(sh), {
   depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: seg, curveSegments: 64 });
 const ring = (r, n = 128) => [...Array(n)].map((_, i) => new THREE.Vector2(r * Math.cos(i / n * 2 * Math.PI), r * Math.sin(i / n * 2 * Math.PI)));
 // 12-point bore = union of two hexagons (circumradius rc) rotated 30°

@@ -10,11 +10,15 @@
     background:radial-gradient(120% 70% at 50% 48%,#2a2e36 0%,#14161b 55%,#07080a 100%)}
   canvas,svg{position:absolute;left:0;top:0}
   .t{position:absolute;white-space:nowrap}
-  #prog{left:72px;top:150px;display:flex;gap:6px}
+  #prog{left:72px;top:318px;display:flex;gap:6px;z-index:6}
   #prog i{display:block;width:128px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden}
   #prog i b{display:block;height:100%;background:#ff8a2a;width:0}
-  #kick{left:72px;top:190px;font-size:26px;font-weight:600;letter-spacing:.12em;color:#ff8a2a}
-  #title{left:70px;top:234px;font-size:70px;font-weight:800;line-height:1.22;letter-spacing:-.03em}
+  #kick{z-index:6;left:72px;top:344px;font-size:28px;font-weight:700;letter-spacing:.04em;color:#ff8a2a}
+  #title{left:72px;top:344px;font-size:28px;font-weight:700;letter-spacing:-.01em;color:rgba(255,255,255,.92)}
+  #mtitle{position:absolute;left:0;right:0;top:0;height:420px;padding:118px 72px 0;z-index:5;
+    background:linear-gradient(180deg,rgba(7,8,10,.92) 0%,rgba(7,8,10,.75) 62%,rgba(7,8,10,0) 100%);
+    font-size:80px;font-weight:900;line-height:1.14;letter-spacing:-.035em;text-shadow:0 4px 18px rgba(0,0,0,.6)}
+  #mtitle span{color:#ff8a2a}
   .lab{font-size:30px;font-weight:700;text-shadow:0 2px 12px rgba(0,0,0,.8)}
   .lab small{display:block;font-size:19px;font-weight:500;letter-spacing:.14em;color:rgba(255,255,255,.6)}
   #sub{position:absolute;left:40px;right:40px;top:1400px;text-align:center;font-size:46px;font-weight:700;line-height:1.38;
@@ -24,7 +28,7 @@
   #z{left:0;top:0;border-radius:50%;border:5px solid #ff8a2a;box-shadow:0 0 0 10px rgba(255,138,42,.15),0 20px 50px rgba(0,0,0,.7);background:#1a1d22}
   #ztag{left:30px;top:-30px;font-size:22px;font-weight:700;letter-spacing:.14em;color:#ff8a2a;background:#14161b;padding:4px 12px;border-radius:14px}
   .pop{position:absolute;font-weight:900;color:#ff8a2a;text-shadow:0 0 24px rgba(255,120,30,.7),0 4px 10px rgba(0,0,0,.8);transform-origin:center}
-  #card{position:absolute;left:0;right:0;top:330px;text-align:center}
+  #card{position:absolute;left:0;right:0;top:470px;text-align:center}
   .chip{display:inline-block;font-size:28px;font-weight:700;padding:12px 22px;border-radius:16px;background:rgba(20,22,27,.85);border:2px solid rgba(255,138,42,.6)}
   #fade{position:absolute;inset:0;background:#000;opacity:0}
 </style></head><body>
@@ -40,6 +44,7 @@
 <div id="card"></div>
 <div id="sub"></div>
 <div id="fade"></div>
+<div id="mtitle">일반 스패너와<br><span>라쳇 스패너</span>의 차이</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -124,7 +129,7 @@ for (const a of [hdStart - 15, hdEnd + 15]) {
   const b = new THREE.Mesh(new RoundedBoxGeometry(1.3, 2.6, 2.2, 4, 0.12), blockM); const p = S.P(5.8, a);
   b.position.set(p.x, p.y, 0.36); b.rotation.z = -a * D; b.castShadow = b.receiveShadow = true; fA.add(b);
 }
-const arcA = amberM(); fA.add(S.arcArrow(arcA, { r: 3.9, a1: hdStart + 4, a2: hdEnd - 4, z: 0.75, tube: 0.06, head: 0.3 }));
+const arcA = amberM(); const arcAObj = S.arcArrow(arcA, { r: 3.9, a1: hdStart + 4, a2: hdEnd - 4, z: 0.75, tube: 0.06, head: 0.3 }); fA.add(arcAObj);
 const camA = new THREE.PerspectiveCamera(30, W / H, 0.1, 120);
 const SP_CYC = [[7.3, 1.0], [10.6, 0.9], [13.7, 0.9]];
 function spannerState(t) {
@@ -158,7 +163,9 @@ const pivot = new THREE.Group(); pivot.add(WR); fR.add(pivot);
 const U = WR.userData, P_ = U.parts;
 const driveArrow = amberM(), returnArrow = greyM();
 fR.add(S.arcArrow(driveArrow, { r: 2.95, a1: TW + 235, a2: TW + 305, z: 0.95, tube: 0.06, head: 0.3 }));
-fR.add(S.arcArrow(returnArrow, { r: 2.95, a1: TW + 305, a2: TW + 235, z: 0.95, tube: 0.06, head: 0.3 }));
+fR.add(S.arcArrow(returnArrow, { r: 3.2, a1: TW + 305, a2: TW + 235, z: 0.95, tube: 0.06, head: 0.3 }));
+for (const m of [driveArrow, returnArrow]) m.depthWrite = false;
+const arrowObjs = fR.children.slice(-2);
 const camR = new THREE.PerspectiveCamera(30, W / H, 0.1, 150), camZ = new THREE.PerspectiveCamera(26, 1, 0.05, 100);
 
 const STROKES = [
@@ -198,7 +205,7 @@ const ov = $('ov'), labs = $('labels'), zctx = $('z').getContext('2d');
 window.renderAt = function (t) {
   let idx = SC.findIndex(s => t >= s[0] && t < s[1]); if (idx < 0) idx = SC.length - 1; const sc = SC[idx];
   bars.forEach((b, i) => b.style.width = (i < idx ? 100 : i > idx ? 0 : 100 * clamp((t - sc[0]) / (sc[1] - sc[0]))) + '%');
-  $('kick').innerHTML = sc[2]; $('title').innerHTML = sc[3];
+  $('kick').innerHTML = sc[2] ? sc[2] + ' <span style="color:rgba(255,255,255,.35)">|</span> <span style="color:#fff">' + sc[3].replace(/<br>/g, ' ') + '</span>' : ''; $('title').innerHTML = '';
   $('kick').style.opacity = $('title').style.opacity = idx === SC.length - 1 ? 0 : win(t, sc[0], sc[1], 0.35);
   const cue = SUBS.find(c => t >= c[0] && t < c[1]);
   $('sub').innerHTML = cue ? cue[2] : ''; $('sub').style.opacity = cue ? win(t, cue[0], cue[1], 0.2) : 0;
@@ -211,7 +218,7 @@ window.renderAt = function (t) {
     const st = spannerState(t);
     spPose.rotation.z = -(hdStart + 60 * st.p - 195) * D; spPose.position.z = st.L * 1.05;
     nutA.rotation.z = -(hdStart - 195) * D - 60 * st.nut * D;
-    arcA.opacity = Math.max(st.drive ? 0.95 : 0, 0.95 * win(t, 14.75, 19.3, 0.3));
+    arcA.opacity = Math.max(st.drive ? 0.95 : 0, 0.95 * win(t, 14.75, 19.3, 0.3)); arcAObj.visible = arcA.opacity > 0.002;
     camOrbit(camA, new THREE.Vector3(0, 0, 2.7), lerp(35, 32.5, smooth((t - 6.6) / 12.7)), lerp(0.16, -0.1, smooth((t - 6.6) / 12.7)), 56 * D);
     renderer.setClearColor(0, 0); renderer.render(sA, camA);
     const sp = v => S.toScreen(S.worldOf(fA, v), camA, W, H);
@@ -239,6 +246,7 @@ window.renderAt = function (t) {
     M.pawl.emissiveIntensity = 0.35 + 0.6 * win(t, 25.2, 27.4, 0.3) + (st.mode === 'drv' && t > 30 && t < 37.6 ? 0.5 : 0);
     M.spring.emissiveIntensity = 0.7 * win(t, 27.5, 29.8, 0.3);
     driveArrow.opacity = 0.95 * win(t, 30.4, 37.3, 0.4); returnArrow.opacity = 0.95 * win(t, 38.0, 46.6, 0.4);
+    arrowObjs[0].visible = driveArrow.opacity > 0.002; arrowObjs[1].visible = returnArrow.opacity > 0.002;
     const ck = camKey(t);
     camOrbit(camR, new THREE.Vector3(ck[3], 0, ck[4]), ck[1], AZ + ck[2], EL);
     if (showZoom) {
@@ -279,7 +287,7 @@ window.renderAt = function (t) {
     }
     if (t >= 55.8) {
       const o1 = clamp((t - 56.1) / 0.5), o2 = clamp((t - 59.25) / 0.5), o3 = clamp((t - 60.4) / 0.5);
-      card = `<div style="position:absolute;left:0;right:0;top:-330px;height:1150px;background:radial-gradient(70% 45% at 50% 52%,rgba(7,8,10,.8),rgba(7,8,10,0));opacity:${o1}"></div>
+      card = `<div style="position:absolute;left:0;right:0;top:-470px;height:1290px;background:radial-gradient(70% 45% at 50% 52%,rgba(7,8,10,.8),rgba(7,8,10,0));opacity:${o1}"></div>
         <div style="position:relative">
         <div style="opacity:${o1};transform:translateY(${(1 - o1) * 30}px)"><div style="font-size:30px;font-weight:600;letter-spacing:.14em;color:#ff8a2a">정리</div>
         <div style="font-size:84px;font-weight:800;line-height:1.2;letter-spacing:-.03em;text-shadow:0 4px 24px rgba(0,0,0,.9)">한쪽으로만<br>걸리는 톱니</div></div>
