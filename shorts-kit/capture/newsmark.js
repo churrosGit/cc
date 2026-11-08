@@ -10,7 +10,7 @@
 //   "fs" sets its font size (CSS px, default 17). The English lines found are printed so the
 //   translations can be matched to them. "overlay": true keeps the article's own line spacing, so the Korean
 //   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity
-//   (default 0.3, 0 = no background or blur); "up": CSS px the Korean moves up into its own line (default 3); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
+//   (default 0.3, 0 = no background or blur); "pad": background margin in CSS px (default 4); "up": CSS px the Korean moves up into its own line (default 3); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
 // spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
 //   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
 //   "layers": true also writes <name>_ko.png (Korean lines only, transparent) and keeps them out of <name>.png,
@@ -110,7 +110,8 @@ const CSS = `
             if (m.bg === 0) { t.style.background = 'none'; t.style.backdropFilter = t.style.webkitBackdropFilter = 'none'; }
             else if (m.bg != null) t.style.background = `rgba(255,255,255,${m.bg})`;
             if (m.weight) t.style.fontWeight = m.weight;
-            t.style.left = (l.left - eb.left - 4) + 'px'; t.style.top = (l.bottom - eb.top - (m.up ?? 3)) + 'px';
+            if (m.pad != null) { t.style.padding = m.pad + 'px'; t.style.borderRadius = '0'; }
+            t.style.left = (l.left - eb.left - (m.pad ?? 4)) + 'px'; t.style.top = (l.bottom - eb.top - (m.up ?? 3)) + 'px';
             el.appendChild(t);
           });
           missing.push('LINES ' + JSON.stringify(lines.map(l => l.text)));

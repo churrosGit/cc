@@ -7,7 +7,7 @@
     "id": "quote",
     "text": "You can’t sleep. You can’t fall asleep",
     "tag": "p",
-    "color": "green",
+    "color": "red",
     "lines": [
      "잠을 잘 수가 없어요. 바로 잠들지도 못하고",
      "자다가도 깨요\" 스콧 몽고메리의 말이다.",
@@ -18,10 +18,11 @@
     ],
     "fs": 17,
     "overlay": true,
-    "bg": 0,
+    "bg": 0.3,
     "box": false,
     "weight": 500,
-    "up": 7
+    "up": 7,
+    "pad": 0
    }
   ],
   "keep": [
@@ -31,7 +32,6 @@
    "mark": "quote",
    "top": 158
   },
-  "css": ".site-header__primary{background-color:rgb(27,57,106)!important}",
-  "layers": true
+  "css": ".site-header__primary{background-color:rgb(27,57,106)!important}"
  }
 }

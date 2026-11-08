@@ -54,13 +54,17 @@ for i, s in enumerate(segs):
                 lines = [(ln[0], ln[1], ln[2], ln[3]) if len(ln) > 3 else (ln[0], ln[1], 0, W) for ln in ko['lines']]
                 bounces = ko.get('bounce', [])
 
+                px, py = ko.get('pad', [12, 8])
+
                 def box(idx):  # union box of some lines (source px), padded
-                    return (max(0, min(lines[j][2] for j in idx) - 12), max(0, min(lines[j][0] for j in idx) - 8),
-                            min(W, max(lines[j][3] for j in idx) + 12), min(layer.height, max(lines[j][1] for j in idx) + 8))
+                    return (max(0, min(lines[j][2] for j in idx) - px), max(0, min(lines[j][0] for j in idx) - py),
+                            min(W, max(lines[j][3] for j in idx) + px), min(layer.height, max(lines[j][1] for j in idx) + py))
 
                 fc = fc.replace(',format=yuv420p[v]', '[b0]')
                 cur_l, nin = 'b0', 1
-                for j in range(len(lines)):
+                # "static": false when the base capture already shows the Korean (with its own background);
+                # then only the popping copies are drawn, cut from that same image with "pad": [0, 0]
+                for j in (range(len(lines)) if ko.get('static', True) else []):
                     busy = '+'.join(f'between(t,{b0},{b1})' for b0, b1, idx in bounces if j in idx)
                     g = os.path.join(segdir, f'ko{i:02d}_{k}_l{j}.png')
                     layer.crop(box([j])).save(g)
