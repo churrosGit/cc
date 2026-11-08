@@ -1,0 +1,80 @@
+{
+ "time1": {
+  "url": "https://time.com/article/2026/11/04/midterm-elections-results-ai-industry-data-centers/",
+  "h": 2600,
+  "marks": [
+   {
+    "id": "poll",
+    "text": "An NBC exit poll found that 56%",
+    "tag": "p",
+    "color": "green",
+    "tr": "NBC 출구조사: 유권자 56%가 AI와 데이터센터가 의회 투표에 '결정적이거나 중요한 요인'이었다고 답했다. 민주당은 상대 후보를 빅테크·데이터센터와 가깝다고 공격했고 오하이오·캔자스·아이오와 등에서 크게 이겼다."
+   }
+  ]
+ },
+ "nbc1": {
+  "url": "https://www.nbcphiladelphia.com/news/local/vineland-loud-humming-noise-ai-data-center/",
+  "h": 2600,
+  "marks": [
+   {
+    "id": "quote",
+    "text": "You can’t sleep. You can’t fall asleep",
+    "tag": "p",
+    "color": "green",
+    "tr": "\"잠을 잘 수가 없어요. 금방 잠들지도 못하고 자다가도 깨요. … 소리가 집 전체에 울리는 게 느껴져요.\""
+   }
+  ]
+ },
+ "abc1": {
+  "url": "https://6abc.com/post/vineland-nj-residents-raise-concerns-humming-noise-data-center-south-lincoln-avenue/18707437/",
+  "h": 2400,
+  "marks": [
+   {
+    "id": "anx",
+    "text": "You know you got this anxiety",
+    "tag": "p",
+    "color": "green",
+    "tr": "\"소음 때문에 불안감이 생겼어요. 저는 그래요. 답답하기도 하고요.\""
+   }
+  ]
+ },
+ "wftv1": {
+  "url": "https://www.wftv.com/news/i-literally-just/UU6AMKIYRM6JLBTX7GIGUPXIAE/",
+  "h": 2600,
+  "marks": [
+   {
+    "id": "head",
+    "text": "I literally just leave my house",
+    "tag": "h1",
+    "color": "red",
+    "tr": "\"그냥 집을 나가버려요\": 이 동네 주민들은 시끄러운 데이터센터 단지가 삶을 망가뜨리고 있다고 말한다"
+   }
+  ]
+ },
+ "pbs1": {
+  "url": "https://www.pbs.org/newshour/nation/opposition-to-ai-data-centers-in-the-midterms-foreshadows-tougher-regulations-ahead",
+  "h": 1500,
+  "marks": [
+   {
+    "id": "head",
+    "text": "Opposition to AI data centers",
+    "tag": "h1",
+    "color": "red",
+    "tr": "중간선거에서 드러난 AI 데이터센터 반대 여론, 더 강한 규제를 예고하다"
+   }
+  ]
+ },
+ "pbs2": {
+  "url": "https://www.pbs.org/newshour/nation/opposition-to-ai-data-centers-in-the-midterms-foreshadows-tougher-regulations-ahead",
+  "h": 2400,
+  "marks": [
+   {
+    "id": "gov",
+    "text": "Data center regulation itself was not on most",
+    "tag": "p",
+    "color": "green",
+    "tr": "데이터센터가 대다수 유권자의 최대 쟁점은 아니었지만, 텍사스·오하이오·조지아 등에서 공화당 주지사를 꺾은 민주당 후보들은 데이터센터에 강경했다. 상당수가 데이터센터 밀집 지역이다."
+   }
+  ]
+ }
+}
