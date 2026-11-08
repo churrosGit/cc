@@ -8,7 +8,7 @@ const srv = http.createServer((q, s) => { const f = path.join(__dirname, decodeU
   const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
   page.on('pageerror', e => console.log('[error]', e.message)); page.on('console', m => console.log('[page]', m.text()));
-  await page.goto(`http://localhost:${srv.address().port}/video.html`, { waitUntil: 'networkidle' });
+  await page.goto(`http://localhost:${srv.address().port}/${process.env.PAGE || 'video.html'}`, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.__done === true, null, { timeout: 120000 });
   fs.mkdirSync(path.join(__dirname, 'preview'), { recursive: true });
   for (const t of process.argv.slice(2)) {

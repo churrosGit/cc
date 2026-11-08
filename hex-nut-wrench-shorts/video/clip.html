@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>라쳇 스패너 디자인 시안 · 3초</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1080px;height:1920px;overflow:hidden}
+  body{font-family:Pretendard,sans-serif;color:#fff;position:relative;
+    background:radial-gradient(120% 70% at 50% 48%,#2a2e36 0%,#14161b 55%,#07080a 100%)}
+  canvas{position:absolute;left:0;top:0}
+  .t{position:absolute;white-space:nowrap}
+  #prog{left:72px;top:150px;display:flex;gap:6px}
+  #prog i{display:block;width:111px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden}
+  #prog i b{display:block;height:100%;background:#ff8a2a;width:0}
+  #kick{left:72px;top:190px;font-size:26px;font-weight:600;letter-spacing:.12em;color:#ff8a2a}
+  #title{left:70px;top:234px;font-size:70px;font-weight:800;line-height:1.22;letter-spacing:-.03em}
+  #sub{position:absolute;left:40px;right:40px;top:1400px;text-align:center;font-size:46px;font-weight:700;line-height:1.38;
+    text-shadow:0 3px 18px rgba(0,0,0,.95),0 0 4px rgba(0,0,0,.9)}
+  #sub b{color:#ff8a2a}
+  .pop{position:absolute;font-weight:900;color:#ff8a2a;text-shadow:0 0 24px rgba(255,120,30,.7),0 4px 10px rgba(0,0,0,.8)}
+</style></head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<div id="pops"></div>
+<div class="t" id="prog"><i><b id="bar"></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+<div class="t" id="kick">공구의 원리 · 라쳇 스패너</div>
+<div class="t" id="title">왜 너트에서 빼지 않고<br>계속 돌릴 수 있을까?</div>
+<div id="sub">렌치를 한 번도 안 빼고 계속 돌린다?<br>비밀은 이 <b>‘딸깍’</b>에 있어요</div>
+<script type="module">
+import * as THREE from 'three';
+import * as S from './scene3d.js';
+import { ratchetWrench } from './wrench2.js';
+const W = 1080, H = 1920, D = Math.PI / 180, DUR = 3;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+const smooth = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+await document.fonts.ready;
+
+const renderer = S.setupRenderer(document.getElementById('c'), { exposure: 1.05 });
+const scene = new THREE.Scene(); S.envMap(renderer, scene, 0.6);
+const key = new THREE.DirectionalLight(0xfff1e0, 2.6); key.position.set(-6, 14, 4); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14 }); key.shadow.radius = 6; key.shadow.bias = -0.0004;
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x8fb8ff, 2.0); rim.position.set(7, 4, -8); scene.add(rim);
+
+const frame = S.toolFrame(); scene.add(frame);
+const plateM = new THREE.MeshStandardMaterial({ color: 0x3a3f47, metalness: 0.85, roughness: 0.55 });
+const flange = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.7, 0.6, 96), plateM);
+flange.rotation.x = Math.PI / 2; flange.position.z = -0.44; flange.castShadow = flange.receiveShadow = true; frame.add(flange);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.ShadowMaterial({ opacity: 0.45 }));
+floor.position.z = -0.74; floor.receiveShadow = true; frame.add(floor);
+frame.add(S.bolt(new THREE.MeshStandardMaterial({ color: 0xb8bcc4, metalness: 1, roughness: 0.32 }), { len: 2.9, z0: -1.2 }));
+const nut = S.nut(new THREE.MeshStandardMaterial({ color: 0xc8b98a, metalness: 1, roughness: 0.3 }), { h: 1.12 }); nut.position.z = -0.12; frame.add(nut);
+
+const T = 45;                                   // handle direction (clockwise-from-above degrees)
+const wr = ratchetWrench(); wr.position.z = 0.06;
+const pivot = new THREE.Group(); pivot.add(wr); frame.add(pivot);
+const gear1 = wr.userData.parts.gear1;
+
+// drive = clockwise (nut turns with it), ret = counter-clockwise (gear+nut stay, body clicks over 5° teeth)
+const STROKES = [[0.15, 0.85, 'drv', 30], [0.95, 1.5, 'ret', 30], [1.62, 2.32, 'drv', 30], [2.42, 2.95, 'ret', 30]];
+function state(t) {
+  let h = 0, g = 0, mode = '';
+  for (const [t0, t1, ty, A] of STROKES) { if (t < t0) break; const k = ease((t - t0) / (t1 - t0)); if (t < t1) mode = ty;
+    if (ty === 'drv') { h -= A * k; g -= A * k; } else h += A * k; }
+  return { h, g, mode };
+}
+const CLICKS = []; { let prev = 0; for (let t = 0; t <= DUR; t += 0.0005) { const s = state(t), n = Math.floor((s.h - s.g) / 5 + 1e-6); if (n > prev) CLICKS.push(+t.toFixed(4)); prev = n; } }
+window.CLICKS = CLICKS; window.TAPS = []; window.DURATION = DUR;
+
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.1, 150);
+const EL = Math.atan2(1, Math.hypot(0.3, 0.7)), AZ = Math.atan2(0.3, 0.7);
+window.renderAt = t => {
+  const s = state(t);
+  pivot.rotation.z = (-T + s.h) * D;            // wrench body
+  gear1.rotation.z = (s.g - s.h) * D;           // black 12-point gear stays locked to the nut
+  nut.rotation.z = (s.g - T) * D;               // nut corners sit in the 12-point bore
+  const k = smooth(t / DUR), dist = 47 - 3 * k, az = AZ + 0.1 - 0.12 * k, tgt = new THREE.Vector3(2.3, 0, 5.4);
+  cam.position.set(tgt.x + dist * Math.cos(EL) * Math.sin(az), dist * Math.sin(EL), tgt.z + dist * Math.cos(EL) * Math.cos(az)); cam.lookAt(tgt); cam.updateMatrixWorld();
+  renderer.render(scene, cam);
+  document.getElementById('bar').style.width = (100 * t / DUR) + '%';
+  document.getElementById('sub').style.opacity = clamp(t / 0.3);
+  let pops = '';
+  for (const [t0, t1, ty] of STROKES) if (ty === 'ret' && t > t0 + 0.05 && t < t1 + 0.25) {
+    const a = t - t0 - 0.05, o = 1 - smooth((t - t1) / 0.25), sc = 0.7 + 0.3 * Math.min(1, a / 0.1);
+    const [nx, ny] = S.toScreen(S.worldOf(frame, new THREE.Vector3(0, 0, 1)), cam, W, H), x = nx + 270, y = ny + 10;
+    pops += `<div class="pop" style="left:${x}px;top:${y}px;font-size:66px;opacity:${o};transform:translate(-50%,-50%) scale(${sc}) rotate(-8deg)">딸깍딸깍</div>`;
+  }
+  document.getElementById('pops').innerHTML = pops;
+};
+const q = new URLSearchParams(location.search); window.renderAt(q.has('t') ? +q.get('t') : 0.5);
+window.__done = true;
+</script>
+</body></html>

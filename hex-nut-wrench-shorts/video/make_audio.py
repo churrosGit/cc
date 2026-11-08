@@ -70,7 +70,7 @@ pad = fft_filter(pad, hi=2200); pluck = fft_filter(pluck, hi=6000); bass = fft_f
 # arrangement envelope: soft intro, full body, outro fade
 tt = t_(N)
 body = np.clip((tt - 4.2) / 0.6, 0, 1)
-master = np.clip(tt / 0.8, 0, 1) * np.clip((DUR - tt) / 2.5, 0, 1)
+master = np.clip(tt / min(0.8, DUR * 0.1), 0, 1) * np.clip((DUR - tt) / min(2.5, DUR * 0.12), 0, 1)
 music = 0.55 * pad + 0.32 * pluck * (0.6 + 0.4 * body) + 0.45 * bass * body + 0.5 * drums
 music *= master
 
