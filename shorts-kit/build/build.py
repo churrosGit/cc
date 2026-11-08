@@ -1,6 +1,7 @@
 """Builds a capture-based shorts video.
 Usage: python3 build.py <projectDir> <capDir> <narration.wav> <out.mp4>
-<projectDir> holds plan.json and txt/ (from ov_render.js); <capDir> holds the capture PNGs named in plan.json."""
+<projectDir> holds plan.json and txt/ (from ov_render.js); <capDir> holds the capture PNGs named in plan.json.
+Segment types: pieces, montage, text, img, split, video. plan["audio"] mixes extra sounds over the narration."""
 import json, os, subprocess, sys
 
 d, cap, audio, out = sys.argv[1:5]
@@ -50,6 +51,18 @@ for i, s in enumerate(segs):
             parts.append(o)
         continue
     o = os.path.join(segdir, f'seg{i:02d}.mp4')
+    if s['type'] == 'video':
+        # a clip (any aspect) fit to the 4:3 canvas height with a blur fill; its sound is added via plan['audio']
+        src = s['src'] if os.path.isabs(s['src']) else os.path.join(d, s['src'])
+        fc = (f"[0:v]fps={fps},split[f][g];"
+              f"[g]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},gblur=sigma=34,"
+              f"colorlevels=romax=0.82:gomax=0.82:bomax=0.82[bg];"
+              f"[f]scale=-2:{H}[fg];[bg][fg]overlay=(W-w)/2:0,format=yuv420p[v]")
+        run(['-ss', str(s.get('from', 0)), '-i', src, '-filter_complex', fc, '-map', '[v]', '-an',
+             '-frames:v', str(n)] + ENC + [o])
+        parts.append(o)
+        print('seg', i, 'video', n, 'frames')
+        continue
     if s['type'] == 'text':
         still(os.path.join(d, 'txt', f'card{i}.png'), n, o, 'null')
     elif s['type'] == 'img':
@@ -84,7 +97,24 @@ for k, (st, _) in enumerate(subs):
     en = subs[k + 1][0] if k + 1 < len(subs) else plan['duration'] + 1
     fc += f";[{cur}][{4 + k}:v]overlay=0:0:shortest=1:enable='gte(t,{st})*lt(t,{en})'[s{k}]"
     cur = f's{k}'
-run(inputs + ['-filter_complex', fc, '-map', f'[{cur}]', '-map', '2:a',
+# extra sounds (clip sound, sfx): plan['audio'] = [{"src", "at", "from", "dur", "gain_db", "fade"}]
+extra = plan.get('audio', [])
+amap = '2:a'
+if extra:
+    base = 4 + len(subs)
+    labels = ['[2:a]aresample=48000,aformat=channel_layouts=stereo[a0]']
+    for k, a in enumerate(extra):
+        src = a['src'] if os.path.isabs(a['src']) else os.path.join(d, a['src'])
+        inputs += ['-i', src]
+        fd, dur = a.get('fade', 0.15), a['dur']
+        labels.append(f"[{base + k}:a]atrim={a.get('from', 0)}:{a.get('from', 0) + dur},asetpts=N/SR/TB,"
+                      f"aresample=48000,aformat=channel_layouts=stereo,volume={a.get('gain_db', 0)}dB,"
+                      f"afade=t=in:d={fd},afade=t=out:st={max(dur - fd, 0)}:d={fd},"
+                      f"adelay={int(a['at'] * 1000)}:all=1[a{k + 1}]")
+    mix = ''.join(f'[a{k}]' for k in range(len(extra) + 1))
+    fc += ';' + ';'.join(labels) + f";{mix}amix=inputs={len(extra) + 1}:duration=first:normalize=0,alimiter=limit=0.95[aout]"
+    amap = '[aout]'
+run(inputs + ['-filter_complex', fc, '-map', f'[{cur}]', '-map', amap,
               '-c:v', 'libx264', '-preset', 'slow', '-crf', '17', '-pix_fmt', 'yuv420p', '-r', str(fps),
               '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-t', str(plan['duration']),
               '-movflags', '+faststart', out])

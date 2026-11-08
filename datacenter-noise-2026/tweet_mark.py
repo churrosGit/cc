@@ -1,4 +1,4 @@
-"""Mark the user's tweet screenshot: blur author name/avatar, red box on line 1, insert a red note below it.
+"""Mark the user's tweet screenshot: blur author name/avatar, red box on line 1, insert a translucent note box below it.
 Usage: python3 tweet_mark.py <screenshot.png> <out.png>"""
 import sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -16,7 +16,7 @@ L1_BOTTOM, CUT = 141, 152
 top = im.crop((0, 0, W, CUT))
 rest = im.crop((0, CUT, W, im.height))
 d = ImageDraw.Draw(top)
-d.rounded_rectangle((157, 89, 613, 151), radius=9, outline=RED, width=4)
+d.rounded_rectangle((156, 88, 614, 152), radius=9, outline=RED, width=6)
 # note band
 f = ImageFont.truetype(FONT, 45)
 lines = ['※ 우리나라가 아니라 미국 민주당', '(11월 3일 미국 중간선거)']
@@ -26,7 +26,8 @@ bh = lh * len(lines) + 36
 gap_top, gap_bot = 27, 30
 band = Image.new('RGB', (W, gap_top + bh + gap_bot), (0, 0, 0))
 bd = ImageDraw.Draw(band)
-bd.rounded_rectangle((157, gap_top, 157 + bw, gap_top + bh), radius=18, fill=RED)
+# translucent blurred note box (on the black tweet background a light tint reads as frosted glass)
+bd.rounded_rectangle((157, gap_top, 157 + bw, gap_top + bh), radius=18, fill=(58, 58, 58))
 for i, t in enumerate(lines):
     bd.text((157 + 30, gap_top + 18 + i * lh + 4), t, font=f, fill='white')
 o = Image.new('RGB', (W, top.height + band.height + rest.height))

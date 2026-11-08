@@ -1,4 +1,5 @@
-// Capture news articles at 360px mobile with thin red/green boxes and Korean translations inserted.
+// Capture news articles at 360px mobile with 2px red/green boxes and Korean translations inserted
+// on a translucent dark, blurred background.
 // Cookie banners, sticky bars, ads and video players are removed; the page is captured from the top.
 // node newsmark.js <spec.json> <outdir> [names...]
 // spec: { "<name>": { "url": "...", "h": 2400, "hide": ["css", ...],
@@ -18,9 +19,11 @@ const CSS = `
   html, body { overflow: visible !important; height: auto !important; position: static !important; }
   iframe, ins, video, [id^="google_ads"], [id^="div-gpt"], [class*="ad-slot"], [class*="AdSlot"], [class*="advert"],
   [data-ad], [data-ad-unit], [class*="taboola"], [id*="taboola"], [class*="outbrain"] { display:none !important; }
-  .x-mark { outline: 1.5px solid var(--c) !important; outline-offset: 4px; border-radius: 3px; }
+  *:focus, *:focus-visible { outline: none !important; }
+  .x-mark { outline: 2px solid var(--c) !important; outline-offset: 4px; border-radius: 3px; }
   .x-tr { display:block; width:fit-content; max-width:100%; margin:12px 0 14px; padding:6px 10px 7px; border-radius:6px; box-sizing:border-box;
-          background: var(--c); color:#fff; font: 600 15px/1.45 'PretendardX', sans-serif; letter-spacing:-0.2px; white-space:normal; text-align:left; }
+          background: rgba(24,24,24,0.62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+          color:#fff; font: 600 15px/1.45 'PretendardX', sans-serif; letter-spacing:-0.2px; white-space:normal; text-align:left; }
 `;
 (async () => {
   const browser = await chromium.launch({ proxy: { server: process.env.HTTPS_PROXY } });
