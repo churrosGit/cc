@@ -18,8 +18,10 @@
     ],
     "fs": 17,
     "overlay": true,
-    "bg": 0.55,
-    "lh": 34
+    "bg": 0,
+    "lh": 34,
+    "box": false,
+    "weight": 500
    }
   ],
   "keep": [

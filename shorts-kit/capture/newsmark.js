@@ -9,7 +9,8 @@
 //   "lines": ["줄1 번역", ...] instead of "tr" writes the Korean under each English line (interlinear);
 //   "fs" sets its font size (CSS px, default 17). The English lines found are printed so the
 //   translations can be matched to them. "overlay": true keeps the article's own line spacing, so the Korean
-//   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity (default 0.3).
+//   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity
+//   (default 0.3, 0 = no background or blur); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
 // spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
 //   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
 // Output: <name>.png (1080 wide) and prints mark rects in output pixels (x3) for piece planning.
@@ -22,6 +23,7 @@ const spec = JSON.parse(fs.readFileSync(specFile, 'utf8'));
 const COLORS = { red: '#e3262b', green: '#14964a' };
 const CSS = `
   @font-face{font-family:'PretendardX';font-weight:600;src:url(/__ccfont/semibold.woff2) format('woff2')}
+  @font-face{font-family:'PretendardX';font-weight:500;src:url(/__ccfont/medium.woff2) format('woff2')}
   html, body { overflow: visible !important; height: auto !important; position: static !important; }
   iframe, ins, video, [id^="google_ads"], [id^="div-gpt"], [class*="ad-slot"], [class*="AdSlot"], [class*="advert"],
   [data-ad], [data-ad-unit], [class*="taboola"], [id*="taboola"], [class*="outbrain"] { display:none !important; }
@@ -42,6 +44,7 @@ const CSS = `
     locale: 'en-US', timezoneId: 'America/New_York',
   });
   await ctx.route('**/__ccfont/semibold.woff2', r => r.fulfill({ path: path.join(fontdir, 'Pretendard-SemiBold.woff2'), contentType: 'font/woff2' }));
+  await ctx.route('**/__ccfont/medium.woff2', r => r.fulfill({ path: path.join(fontdir, 'Pretendard-Medium.woff2'), contentType: 'font/woff2' }));
   for (const [name, s] of Object.entries(spec)) {
     if (only.length && !only.includes(name)) continue;
     const page = await ctx.newPage();
@@ -70,7 +73,8 @@ const CSS = `
         cands.sort((a, b) => a.innerText.length - b.innerText.length);
         const el = cands[0];
         if (!el) { missing.push(m.text); continue; }
-        el.classList.add('x-mark'); el.style.setProperty('--c', COLORS[m.color]);
+        if (m.box !== false) el.classList.add('x-mark');
+        el.style.setProperty('--c', COLORS[m.color]);
         el.dataset.kind = m.id || m.text.slice(0, 12);
         if (m.lines) {
           // interlinear: open up the line spacing, then put the Korean for each English line right under it
@@ -101,7 +105,9 @@ const CSS = `
             if (!m.lines[i]) return;
             const t = document.createElement('div'); t.className = 'x-ln'; t.textContent = m.lines[i];
             t.style.setProperty('--c', COLORS[m.color]); t.style.setProperty('--fs', kfs + 'px');
-            if (m.bg != null) t.style.background = `rgba(255,255,255,${m.bg})`;
+            if (m.bg === 0) { t.style.background = 'none'; t.style.backdropFilter = t.style.webkitBackdropFilter = 'none'; }
+            else if (m.bg != null) t.style.background = `rgba(255,255,255,${m.bg})`;
+            if (m.weight) t.style.fontWeight = m.weight;
             t.style.left = (l.left - eb.left - 4) + 'px'; t.style.top = (l.bottom - eb.top - 3) + 'px';
             el.appendChild(t);
           });
