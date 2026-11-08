@@ -25,7 +25,6 @@
 <div id="pops"></div>
 <script type="module">
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import * as S from './scene3d.js';
 import { ratchetWrenchCut } from './wrench2.js';
 const W = 720, H = 1280, D = Math.PI / 180, DUR = 8;
@@ -61,11 +60,6 @@ const [sA, fA] = makeScene();
 const nutA = S.nut(zinc, { h: 0.82 }); nutA.position.z = -0.12; fA.add(nutA);
 const hdStart = -30, hdEnd = 30;
 const spPose = new THREE.Group(); spPose.add(S.spanner(chrome, { len: 7.4 })); fA.add(spPose);
-const blockM = new THREE.MeshStandardMaterial({ color: 0x5a3a26, metalness: 0.4, roughness: 0.55 });
-for (const a of [hdStart - 15, hdEnd + 15]) {
-  const b = new THREE.Mesh(new RoundedBoxGeometry(1.3, 2.6, 2.0, 4, 0.12), blockM); const p = S.P(5.8, a);
-  b.position.set(p.x, p.y, 0.3); b.rotation.z = -a * D; b.castShadow = b.receiveShadow = true; fA.add(b);
-}
 const camA = cam(ASP, new THREE.Vector3(3.0, 0, -0.2), 20.5, 0.0, 54 * D);
 function spanner(t) {
   const k = Math.floor(t / 4), u = t - 4 * k; let p, L, nut;
@@ -99,7 +93,7 @@ function ratchet(t) {                       // period 4 s, phased with spanner()
   return { h, g, mode: u >= 0.2 && u < 1.8 ? 'drv' : u >= 2.0 && u < 3.6 ? 'ret' : '' };
 }
 const CLICKS = []; { let prev = 0; for (let t = 0; t < DUR; t += 0.0005) { const s = ratchet(t), n = Math.floor((s.h - A0 - s.g) / U.s + 1e-6); if (n > prev) CLICKS.push(+t.toFixed(4)); prev = n; } }
-window.CLICKS = CLICKS; window.TAPS = [3.8, 7.8]; window.DURATION = DUR;
+window.CLICKS = CLICKS; window.TAPS = []; window.DURATION = DUR;
 
 window.renderAt = t => {
   t = ((t % DUR) + DUR) % DUR;
