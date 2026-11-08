@@ -54,24 +54,46 @@ b = {
     's8b': T(34.06 + 1.0),            # 6abc headline 1 s, then the quote
     's9': T((36.27 + 36.77) / 2),
     's10': T((40.46 + 41.11) / 2),
-    'm1': T(7.0),                     # "웅 하는 기계 소리가 끊이지 않습니다" -> speechless pepe
+    'm1': T(7.0),                     # "웅 하는 기계 소리가 끊이지 않습니다" -> angry pepe
     'm2': T(38.65),                   # "그냥 집을 나가버린다고" -> crying pepe
 }
 CLIP2_FROM = 6.8  # the clip's houses part for the ending
+def ko(img, lines, bounce):
+    # interlinear Korean is already in the capture (red, see-through background hugging the glyphs);
+    # the lines the narration is on pop out toward the viewer
+    return {"img": img, "lines": lines, "bounce": bounce, "static": False, "pad": [0, 0]}
+
+
+L = {  # Korean line boxes [top, bottom, left, right] printed by newsmark.js
+    "pbsh": [[1481, 1535, 60, 661], [1649, 1703, 60, 580], [1817, 1871, 60, 344], [1985, 2039, 63, 393], [2153, 2207, 63, 267]],
+    "pbsg": [[419, 467, 63, 695], [506, 560, 60, 584], [593, 641, 60, 811], [680, 728, 155, 651], [766, 814, 60, 668],
+             [853, 901, 60, 235], [940, 988, 60, 571], [1026, 1074, 60, 625], [1113, 1167, 63, 893], [1200, 1248, 60, 754]],
+    "timep": [[184, 232, 75, 747], [261, 309, 72, 433], [338, 386, 72, 827], [414, 462, 75, 584], [491, 539, 72, 574],
+              [568, 616, 72, 442], [645, 693, 75, 656], [721, 775, 72, 763], [798, 852, 72, 411], [875, 923, 72, 637]],
+    "nbcq": [[528, 576, 36, 854], [609, 657, 36, 803], [690, 738, 36, 740], [771, 819, 39, 786], [852, 900, 36, 686], [933, 981, 36, 460]],
+    "abcq": [[565, 619, 68, 793], [643, 691, 68, 737], [721, 769, 68, 393]],
+    "wftvh": [[252, 306, 54, 395], [396, 450, 57, 648], [540, 594, 54, 609], [684, 738, 54, 311], [828, 882, 54, 615]],
+}
 segments = [
-    {"start": 0.0, "type": "pieces", "items": [{"img": "tw1", "y": [20, 500]}]},
+    {"start": 0.0, "type": "pieces", "items": [{"img": "tw1", "y": [20, 420]}]},
     {"start": b['s2'], "type": "video", "src": video, "from": 0},
-    {"start": b['m1'], "type": "meme", "src": MEMES + "speechless.jpg"},
+    {"start": b['m1'], "type": "meme", "src": MEMES + "angry-red.jpg"},
     {"start": b['s3'], "type": "pieces", "items": [{"img": "pbs1", "y": [0, 1030]}]},
-    {"start": b['s3b'], "type": "pieces", "items": [{"img": "pbs1", "y": [1300, 2240]}]},
-    {"start": b['s4'], "type": "pieces", "items": [{"img": "pbs2", "y": [3200, 4530]}]},
+    {"start": b['s3b'], "type": "pieces", "items": [{"img": "pbsh", "y": [1300, 2400],
+        "ko": ko("pbsh", L["pbsh"], [[0, 2.64, [0, 1]]])}]},
+    {"start": b['s4'], "type": "pieces", "items": [{"img": "pbsg", "y": [300, 1300],
+        "ko": ko("pbsg", L["pbsg"], [[0, 3.2, [8, 9]], [3.2, 5.92, [3, 6, 7]]])}]},
     {"start": b['s5'], "type": "pieces", "items": [{"img": "time1", "y": [240, 860]}]},
-    {"start": b['s5b'], "type": "pieces", "items": [{"img": "time1", "y": [3420, 4740]}]},
+    {"start": b['s5b'], "type": "pieces", "items": [{"img": "timep", "y": [0, 960],
+        "ko": ko("timep", L["timep"], [[0, 2.67, [0]], [2.67, 5.75, [1, 2, 3]]])}]},
     {"start": b['s6'], "type": "pieces", "items": [{"img": "nbc1", "y": [330, 1240]}]},
-    {"start": b['s7'], "type": "pieces", "items": [{"img": "nbc1", "y": [3850, 4700]}]},
+    {"start": b['s7'], "type": "pieces", "items": [{"img": "nbcq", "y": [0, 1050],
+        "ko": ko("nbcq", L["nbcq"], [[0, 2.3, [0]], [2.3, 4.4, [4, 5]]])}]},
     {"start": b['s8'], "type": "pieces", "items": [{"img": "abc1", "y": [0, 690]}]},
-    {"start": b['s8b'], "type": "pieces", "items": [{"img": "abc1", "y": [4300, 4850]}]},
-    {"start": b['s9'], "type": "pieces", "items": [{"img": "wftv1", "y": [60, 850]}]},
+    {"start": b['s8b'], "type": "pieces", "items": [{"img": "abcq", "y": [0, 820],
+        "ko": ko("abcq", L["abcq"], [[0, 1.46, [0, 1]]])}]},
+    {"start": b['s9'], "type": "pieces", "items": [{"img": "wftvh", "y": [60, 930],
+        "ko": ko("wftvh", L["wftvh"], [[0, 2.13, [0, 1]]])}]},
     {"start": b['m2'], "type": "meme", "src": MEMES + "crying.jpg"},
     {"start": b['s10'], "type": "video", "src": video, "from": CLIP2_FROM},
 ]
@@ -91,7 +113,7 @@ audio = [
 # whoosh peaks inside the file, so it is started early enough to peak on the cut.
 WHOOSH = [("098_후욱 -b중간2.wav", -8.7, 0.30, 0.75), ("041_바람.mp3", -10.3, 0.27, 0.72),
           ("096_후욱 -a짧은2.mp3", -15.5, 0.13, 0.37), ("070_휘익.mp3", -10.2, 0.42, 1.06)]
-REACT = {"m1": ("074_어이없는 웃음소리.mp3", -11.7, 0.15, 2.0, -18),
+REACT = {"m1": ("051_둥(큰북소리).wav", -7.2, 0, 1.6, -15),
          "m2": ("019_퓨히익.mp3", -16.7, 0.85, 1.5, -16)}
 k = 0
 for seg in segments[1:]:

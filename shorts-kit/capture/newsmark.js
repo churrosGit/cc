@@ -12,7 +12,8 @@
 //   lies over the gap and partly over the next line ("lh": CSS px opens the spacing a little); "bg" sets its background opacity
 //   (default 0.3, 0 = no background or blur); "pad": background margin in CSS px (default 4; 0 = hugs the glyph ink); "up": CSS px the Korean moves up into its own line (default 3); "weight": 500 (Medium) or 600 (SemiBold); "box": false drops the outline.
 // spec "css": extra CSS for that page. "keep": ["css"] keeps those sticky bars (e.g. the outlet's logo bar); "view": {"mark": id, "top": 160}
-//   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px.
+//   takes a phone-screen (viewport) capture scrolled so that mark sits at "top" CSS px ("reveal": true scrolls
+//   down and back up first, for sites that show their logo bar only on scrolling up).
 //   "layers": true also writes <name>_ko.png (Korean lines only, transparent) and keeps them out of <name>.png,
 //   so build.py can animate single lines; the printed "lines" are their [top, bottom, left, right] in output px.
 // Output: <name>.png (1080 wide) and prints mark rects in output pixels (x3) for piece planning.
@@ -161,6 +162,10 @@ const CSS = `
       await page.evaluate(([k, top]) => { const e = document.querySelector(`[data-kind="${k}"]`);
         window.scrollTo(0, e.getBoundingClientRect().top + scrollY - top); }, [s.view.mark, s.view.top || 160]);
       await page.waitForTimeout(800);
+      if (s.view.reveal) {  // sites that hide the logo bar while scrolling down show it again on a small scroll up
+        await page.evaluate(() => window.scrollBy(0, 250)); await page.waitForTimeout(600);
+        await page.mouse.wheel(0, -250); await page.waitForTimeout(1200);
+      }
       h = 780;
       await page.screenshot({ path: path.join(out, name + '.png') });
     } else {

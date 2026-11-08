@@ -1,0 +1,158 @@
+{
+ "pbsh": {
+  "url": "https://www.pbs.org/newshour/nation/opposition-to-ai-data-centers-in-the-midterms-foreshadows-tougher-regulations-ahead",
+  "h": 2400,
+  "marks": [
+   {
+    "id": "head",
+    "text": "Opposition to AI data centers",
+    "tag": "h1",
+    "lines": [
+     "AI 데이터센터 반대 여론이",
+     "중간선거에서 드러나며",
+     "예고하는 것:",
+     "더 강한 규제가",
+     "다가온다"
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "fs": 20,
+    "box": false,
+    "overlay": true,
+    "up": 5,
+    "lh": 56
+   }
+  ]
+ },
+ "pbsg": {
+  "url": "https://www.pbs.org/newshour/nation/opposition-to-ai-data-centers-in-the-midterms-foreshadows-tougher-regulations-ahead",
+  "view": {
+   "mark": "gov",
+   "top": 120
+  },
+  "marks": [
+   {
+    "id": "gov",
+    "text": "Data center regulation itself was not on most",
+    "tag": "p",
+    "lines": [
+     "데이터센터 규제 자체는 대부분의",
+     "투표 항목에 없었고, 대다수",
+     "유권자의 최대 쟁점도 아니었다. 하지만",
+     "데이터센터 반대 강경론은",
+     "여러 후보의 공약에 녹아들었다.",
+     "그중에는",
+     "오랜 공화당 주지사 체제를",
+     "뒤집은 민주당 후보들도 있다.",
+     "텍사스, 오하이오, 조지아, 네바다, 아이오와",
+     "상당수가 데이터센터 밀집 지역이다."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "fs": 17,
+    "box": false,
+    "overlay": true,
+    "up": 7
+   }
+  ]
+ },
+ "timep": {
+  "url": "https://time.com/article/2026/11/04/midterm-elections-results-ai-industry-data-centers/",
+  "keep": [
+   "div[class*='header-page-extrusion']"
+  ],
+  "view": {
+   "mark": "poll",
+   "top": 46,
+   "reveal": true
+  },
+  "marks": [
+   {
+    "id": "poll",
+    "text": "An NBC exit poll found that 56%",
+    "tag": "p",
+    "lines": [
+     "NBC 출구조사에서 유권자 56%가",
+     "AI와 데이터센터가",
+     "의회 투표에 '결정적이거나 중요한 요인'",
+     "이었다고 답했다. 민주당은",
+     "1억 달러 넘는 방송 광고로",
+     "공화당 상대 후보를",
+     "빅테크·데이터센터와 지나치게",
+     "가깝다고 공격했고, 상당수 선거에서",
+     "오하이오, 캔자스,",
+     "아이오와 등에서 크게 이겼다."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "fs": 17,
+    "box": false,
+    "overlay": true,
+    "up": 7
+   }
+  ]
+ },
+ "abcq": {
+  "url": "https://6abc.com/post/vineland-nj-residents-raise-concerns-humming-noise-data-center-south-lincoln-avenue/18707437/",
+  "keep": [
+   "section.nav.sticky"
+  ],
+  "view": {
+   "mark": "anx",
+   "top": 170
+  },
+  "marks": [
+   {
+    "id": "anx",
+    "text": "You know you got this anxiety",
+    "tag": "p",
+    "lines": [
+     "\"불안감이 생기잖아요, 적어도 저는요,",
+     "소음 때문에요. 답답하기도 하고요\"",
+     "루이스는 말했다."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "fs": 17,
+    "box": false,
+    "overlay": true,
+    "up": 7
+   }
+  ]
+ },
+ "wftvh": {
+  "url": "https://www.wftv.com/news/i-literally-just/UU6AMKIYRM6JLBTX7GIGUPXIAE/",
+  "h": 1500,
+  "marks": [
+   {
+    "id": "head",
+    "text": "I literally just leave my house",
+    "tag": "h1",
+    "lines": [
+     "“저는 그냥 집을",
+     "나가버려요”: 이 동네에서는",
+     "주민들이 시끄러운 데이터",
+     "센터 단지가",
+     "삶을 망가뜨린다고 말한다"
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "fs": 19,
+    "box": false,
+    "overlay": true,
+    "up": 5,
+    "lh": 48
+   }
+  ]
+ }
+}
