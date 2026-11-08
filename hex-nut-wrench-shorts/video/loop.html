@@ -15,16 +15,20 @@
   .chip{display:inline-block;font-size:24px;font-weight:800;padding:5px 14px;border-radius:10px;margin-bottom:8px}
   .line{font-size:27px;font-weight:700;line-height:1.35;text-shadow:0 2px 10px rgba(0,0,0,.9)}
   .line b{color:#ff8a2a}
-  .cnt{position:absolute;right:36px;top:6px;text-align:right;font-size:20px;font-weight:700;color:rgba(255,255,255,.75);line-height:1}
-  .cnt b{display:inline-block;font-size:46px;font-weight:900;color:#ff8a2a;margin-left:6px;transform-origin:70% 60%}
-  .cnt i{font-style:normal;font-size:28px;font-weight:800;color:#fff;margin-left:2px}
+  .cnt{position:absolute;left:28px;z-index:3;padding:8px 18px 6px;border-radius:16px;background:rgba(10,11,14,.72);
+    border:1.5px solid rgba(255,255,255,.12);line-height:1}
+  .cnt small{display:block;font-size:19px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.02em}
+  .cnt b{display:inline-block;font-size:54px;font-weight:900;color:#ff8a2a;transform-origin:50% 70%}
+  .cnt i{font-style:normal;font-size:28px;font-weight:800;color:#fff;margin-left:3px}
   .pop{position:absolute;z-index:4;font-weight:900;color:#ff8a2a;text-shadow:0 0 18px rgba(255,120,30,.7),0 3px 8px rgba(0,0,0,.8)}
 </style></head><body>
 <div class="panel" style="top:215px"></div><div class="panel" style="top:752px"></div>
 <canvas id="c" width="720" height="1280"></canvas>
 <div id="title">일반 스패너와<br><span>라쳇 스패너</span>의 차이</div>
-<div class="cap" style="top:215px"><div class="cnt">조인 횟수<b id="cA">0</b><i>회</i></div><span class="chip" style="background:#3b4250">일반 스패너</span><div class="line">돌리고, 빼고, 다시 끼우기를 <b>계속 반복</b>해야 해요</div></div>
-<div class="cap" style="top:752px"><div class="cnt">조인 횟수<b id="cB">0</b><i>회</i></div><span class="chip" style="background:#ff8a2a">라쳇 스패너</span><div class="line">끼운 채 <b>왕복만!</b> 톱니가 한쪽으로만 걸려 너트가 돌아요</div></div>
+<div class="cap" style="top:215px"><span class="chip" style="background:#3b4250">일반 스패너</span><div class="line">돌리고, 빼고, 다시 끼우기를 <b>계속 반복</b>해야 해요</div></div>
+<div class="cap" style="top:752px"><span class="chip" style="background:#ff8a2a">라쳇 스패너</span><div class="line">끼운 채 <b>왕복만!</b> 톱니가 한쪽으로만 걸려 너트가 돌아요</div></div>
+<div class="cnt" style="bottom:568px"><small>조인 횟수</small><b id="cA">0</b><i>회</i></div>
+<div class="cnt" style="bottom:31px"><small>조인 횟수</small><b id="cB">0</b><i>회</i></div>
 <div id="pops"></div>
 <script type="module">
 import * as THREE from 'three';
