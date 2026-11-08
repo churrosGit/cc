@@ -11,7 +11,7 @@
   .panel{position:absolute;left:0;right:0;height:525px;background:radial-gradient(110% 90% at 50% 60%,#2a2e36 0%,#15171c 60%,#0a0b0e 100%)}
   #title{position:absolute;left:0;right:0;top:0;padding:58px 44px 0;font-size:54px;font-weight:900;line-height:1.14;letter-spacing:-.035em}
   #title span{color:#ff8a2a}
-  .cap{position:absolute;left:36px;right:36px;z-index:3}
+  .cap{position:absolute;left:0;right:0;z-index:3;padding:14px 36px 26px;background:linear-gradient(180deg,rgba(10,11,14,.82) 0%,rgba(10,11,14,.6) 70%,rgba(10,11,14,0) 100%)}
   .chip{display:inline-block;font-size:24px;font-weight:800;padding:5px 14px;border-radius:10px;margin-bottom:8px}
   .line{font-size:27px;font-weight:700;line-height:1.35;text-shadow:0 2px 10px rgba(0,0,0,.9)}
   .line b{color:#ff8a2a}
@@ -20,8 +20,8 @@
 <div class="panel" style="top:215px"></div><div class="panel" style="top:752px"></div>
 <canvas id="c" width="720" height="1280"></canvas>
 <div id="title">일반 스패너와<br><span>라쳇 스패너</span>의 차이</div>
-<div class="cap" style="top:232px"><span class="chip" style="background:#3b4250">일반 스패너</span><div class="line">돌리고, 빼고, 다시 끼우기를 <b>계속 반복</b>해야 해요</div></div>
-<div class="cap" style="top:769px"><span class="chip" style="background:#ff8a2a">라쳇 스패너</span><div class="line">끼운 채 <b>왕복만!</b> 톱니가 한쪽으로만 걸려 너트가 돌아요</div></div>
+<div class="cap" style="top:215px"><span class="chip" style="background:#3b4250">일반 스패너</span><div class="line">돌리고, 빼고, 다시 끼우기를 <b>계속 반복</b>해야 해요</div></div>
+<div class="cap" style="top:752px"><span class="chip" style="background:#ff8a2a">라쳇 스패너</span><div class="line">끼운 채 <b>왕복만!</b> 톱니가 한쪽으로만 걸려 너트가 돌아요</div></div>
 <div id="pops"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -91,12 +91,12 @@ WR.position.z = 0.06; WR.userData.parts.cover.visible = false;
 const pivot = new THREE.Group(); pivot.add(WR); fB.add(pivot);
 const U = WR.userData, P_ = U.parts;
 const camB = cam(ASP, new THREE.Vector3(2.0, 0, -0.1), 13.5, 0.0, 58 * D);
-const A0 = 15, SW = 30;                     // handle swings between +15° and -15° (math, ccw +)
-function ratchet(t) {
-  const k = Math.floor(t / 2), u = t - 2 * k;
-  const dk = ease((u - 0.1) / 0.8), rk = ease((u - 1.05) / 0.8);
+const A0 = 30, SW = 60;                     // same 60° stroke as the open-end spanner, handle swings +30° -> -30°
+function ratchet(t) {                       // period 4 s, phased with spanner(): tighten together, then swing back
+  const k = Math.floor(t / 4), u = t - 4 * k;
+  const dk = ease((u - 0.2) / 1.6), rk = ease((u - 2.0) / 1.6);
   const h = A0 - SW * dk + SW * rk, g = -SW * (k + dk);
-  return { h, g, mode: u >= 0.1 && u < 0.9 ? 'drv' : u >= 1.05 && u < 1.85 ? 'ret' : '' };
+  return { h, g, mode: u >= 0.2 && u < 1.8 ? 'drv' : u >= 2.0 && u < 3.6 ? 'ret' : '' };
 }
 const CLICKS = []; { let prev = 0; for (let t = 0; t < DUR; t += 0.0005) { const s = ratchet(t), n = Math.floor((s.h - A0 - s.g) / U.s + 1e-6); if (n > prev) CLICKS.push(+t.toFixed(4)); prev = n; } }
 window.CLICKS = CLICKS; window.TAPS = [3.8, 7.8]; window.DURATION = DUR;
