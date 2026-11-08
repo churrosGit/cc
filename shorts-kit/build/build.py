@@ -41,33 +41,50 @@ for i, s in enumerate(segs):
             ins = ['-loop', '1', '-framerate', str(fps), '-i', os.path.join(cap, it['img'] + '.png')]
             ko = it.get('ko')
             if ko:
-                # interlinear Korean layer (transparent PNG at the same coordinates): each line is overlaid on its own,
-                # and the lines being narrated pop out toward the viewer: they grow by up to 'pop' (default 8%)
-                # around their own centre, abs(sin(2*pi*t)) = 2 pops per second
+                # interlinear Korean layer (transparent PNG at the same coordinates). Lines sit still, except during
+                # each "bounce" entry [t0, t1, [line idx]]: those lines are cut out together as ONE group image and
+                # pop out toward the viewer as a unit (grow by up to 'pop', default 8%, around the group's centre;
+                # abs(sin(2*pi*t)) = 2 pops per second), so lines read together always pop in sync.
+                from PIL import Image
                 kf = min(1, H / h)
                 fw, fh = round(W * kf), round(h * kf)
                 fx, fy = (W - fw) // 2, (H - fh) // 2
                 pop = ko.get('pop', 0.08)
-                n_l = len(ko['lines'])
+                layer = Image.open(os.path.join(cap, ko['img'] + '.png')).convert('RGBA')
+                lines = [(ln[0], ln[1], ln[2], ln[3]) if len(ln) > 3 else (ln[0], ln[1], 0, W) for ln in ko['lines']]
+                bounces = ko.get('bounce', [])
+
+                def box(idx):  # union box of some lines (source px), padded
+                    return (max(0, min(lines[j][2] for j in idx) - 12), max(0, min(lines[j][0] for j in idx) - 8),
+                            min(W, max(lines[j][3] for j in idx) + 12), min(layer.height, max(lines[j][1] for j in idx) + 8))
+
                 fc = fc.replace(',format=yuv420p[v]', '[b0]')
-                fc += f";[1:v]crop={W}:{h}:0:{a},scale={fw}:{fh},format=rgba,split={n_l}" + ''.join(f'[k{j}]' for j in range(n_l))
-                cur_l = 'b0'
-                for j, ln in enumerate(ko['lines']):
-                    y0, y1 = ln[0], ln[1]
-                    x0, x1 = (ln[2], ln[3]) if len(ln) > 3 else (0, W)
-                    ty0 = max(0, round((y0 - 8 - a) * kf)); ty1 = min(fh, round((y1 + 8 - a) * kf))
-                    tx0 = max(0, round((x0 - 12) * kf)); tx1 = min(fw, round((x1 + 12) * kf))
-                    sw, sh = tx1 - tx0, ty1 - ty0
-                    cx, cy = fx + tx0 + sw / 2, fy + ty0 + sh / 2
-                    act = '+'.join(f'between(t,{b0},{b1})' for b0, b1, idx in ko.get('bounce', []) if j in idx)
-                    fc += f";[k{j}]crop={sw}:{sh}:{tx0}:{ty0}"
-                    if act:
-                        f = f"(1+{pop}*abs(sin(2*PI*t))*min(1,{act}))"
-                        fc += f",scale=w='trunc(iw*{f}/2)*2':h=-2:eval=frame:flags=bicubic"
-                    fc += f"[l{j}];[{cur_l}][l{j}]overlay=x='{cx:.1f}-w/2':y='{cy:.1f}-h/2':eval=frame[o{j}]"
-                    cur_l = f'o{j}'
+                cur_l, nin = 'b0', 1
+                for j in range(len(lines)):
+                    busy = '+'.join(f'between(t,{b0},{b1})' for b0, b1, idx in bounces if j in idx)
+                    g = os.path.join(segdir, f'ko{i:02d}_{k}_l{j}.png')
+                    layer.crop(box([j])).save(g)
+                    x0, y0, x1, y1 = box([j])
+                    ins += ['-i', g]
+                    en = f":enable='not({busy})'" if busy else ''
+                    fc += (f";[{nin}:v]scale={round((x1 - x0) * kf)}:{round((y1 - y0) * kf)}[s{nin}];"
+                           f"[{cur_l}][s{nin}]overlay={fx + round((x0) * kf)}:{fy + round((y0 - a) * kf)}{en}[o{nin}]")
+                    cur_l = f'o{nin}'; nin += 1
+                for q, (b0, b1, idx) in enumerate(bounces):
+                    x0, y0, x1, y1 = box(idx)
+                    grp = Image.new('RGBA', (x1 - x0, y1 - y0))
+                    for j in idx:  # only the listed lines, even if others lie between them
+                        lb = box([j]); grp.alpha_composite(layer.crop(lb), (lb[0] - x0, lb[1] - y0))
+                    g = os.path.join(segdir, f'ko{i:02d}_{k}_g{q}.png'); grp.save(g)
+                    sw, sh = round((x1 - x0) * kf), round((y1 - y0) * kf)
+                    cx, cy = fx + (x0 * kf) + sw / 2, fy + (y0 - a) * kf + sh / 2
+                    f = f"(1+{pop}*abs(sin(2*PI*t)))"
+                    ins += ['-loop', '1', '-framerate', str(fps), '-i', g]
+                    fc += (f";[{nin}:v]scale={sw * 2}:{sh * 2},format=rgba,"
+                           f"scale=w='trunc({sw}*{f}/2)*2':h='trunc({sh}*{f}/2)*2':eval=frame:flags=bicubic[s{nin}];"
+                           f"[{cur_l}][s{nin}]overlay=x='{cx:.1f}-w/2':y='{cy:.1f}-h/2':eval=frame:enable='between(t,{b0},{b1})'[o{nin}]")
+                    cur_l = f'o{nin}'; nin += 1
                 fc += f";[{cur_l}]format=yuv420p[v]"
-                ins += ['-loop', '1', '-framerate', str(fps), '-i', os.path.join(cap, ko['img'] + '.png')]
             run(ins + ['-filter_complex', fc, '-map', '[v]', '-frames:v', str(m)] + ENC + [o])
             parts.append(o)
         print('seg', i, 'pieces', alloc)
