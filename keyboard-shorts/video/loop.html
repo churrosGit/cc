@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<title>일반 키보드와 기계식 키보드 · 16초 루프</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}</script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:720px;height:1280px;overflow:hidden}
+  body{font-family:Pretendard,sans-serif;color:#fff;position:relative;background:#0c0d10}
+  canvas{position:absolute;left:0;top:0}
+  .panel{position:absolute;left:0;right:0;height:525px;background:radial-gradient(110% 90% at 50% 60%,#2a2e36 0%,#15171c 60%,#0a0b0e 100%)}
+  #title{position:absolute;left:0;right:0;top:0;padding:58px 44px 0;font-size:54px;font-weight:900;line-height:1.14;letter-spacing:-.035em}
+  #title span{color:#ff8a2a}
+  .cap{position:absolute;left:0;right:0;z-index:3;padding:14px 36px 26px;background:linear-gradient(180deg,rgba(10,11,14,.82) 0%,rgba(10,11,14,.6) 70%,rgba(10,11,14,0) 100%)}
+  .chip{display:inline-block;font-size:24px;font-weight:800;padding:5px 14px;border-radius:10px;margin-bottom:8px}
+  .line{font-size:27px;font-weight:700;line-height:1.35;text-shadow:0 2px 10px rgba(0,0,0,.9)}
+  .line b{color:#ff8a2a}
+  .cnt{position:absolute;left:28px;z-index:3;padding:8px 18px 6px;border-radius:16px;background:rgba(10,11,14,.72);
+    border:1.5px solid rgba(255,255,255,.12);line-height:1}
+  .cnt small{display:block;font-size:19px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.02em}
+  .cnt b{display:inline-block;font-size:54px;font-weight:900;color:#ff8a2a;transform-origin:50% 70%}
+  .cnt i{font-style:normal;font-size:28px;font-weight:800;color:#fff;margin-left:3px}
+  .pop{position:absolute;z-index:4;font-weight:900;color:#ff8a2a;text-shadow:0 0 18px rgba(255,120,30,.7),0 3px 8px rgba(0,0,0,.8)}
+  .pop.w{color:#e9ecf1;text-shadow:0 0 14px rgba(255,255,255,.35),0 3px 8px rgba(0,0,0,.8)}
+</style></head><body>
+<div class="panel" style="top:215px"></div><div class="panel" style="top:752px"></div>
+<canvas id="c" width="720" height="1280"></canvas>
+<div id="title">일반 키보드와<br><span>기계식 키보드</span>의 차이</div>
+<div class="cap" style="top:215px"><span class="chip" style="background:#3b4250">일반 키보드 · 멤브레인</span><div class="line">고무 돔을 <b>바닥까지 꾹</b> 눌러야 막이 닿아 입력돼요</div></div>
+<div class="cap" style="top:752px"><span class="chip" style="background:#ff8a2a">기계식 키보드</span><div class="line">키마다 <b>스프링 스위치</b>, 절반만 눌러도 입력돼요</div></div>
+<div class="cnt" style="bottom:568px"><small>입력 횟수</small><b id="cA">0</b><i>회</i></div>
+<div class="cnt" style="bottom:31px"><small>입력 횟수</small><b id="cB">0</b><i>회</i></div>
+<div id="pops"></div>
+<script type="module">
+import * as THREE from 'three';
+import * as S from './scene3d.js';
+import * as K from './keyboard3d.js';
+const W = 720, H = 1280, D = Math.PI / 180, DUR = 16;
+const q = new URLSearchParams(location.search);
+const MODE = q.get('mode') || 'B';           // A: same tempo, full strokes · B: mechanical half-strokes at double tempo
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+await document.fonts.ready;
+
+const renderer = S.setupRenderer(document.getElementById('c'), { exposure: 1.05 });
+renderer.autoClear = false;
+function makeScene(floorY) {
+  const sc = new THREE.Scene(); S.envMap(renderer, sc, 0.6);
+  const key = new THREE.DirectionalLight(0xfff1e0, 2.6); key.position.set(-28, 60, 40); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 200 });
+  key.shadow.radius = 4; key.shadow.bias = -0.0004; sc.add(key);
+  const rim = new THREE.DirectionalLight(0x8fb8ff, 2.0); rim.position.set(30, 18, -36); sc.add(rim);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.45 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = floorY; floor.receiveShadow = true; sc.add(floor);
+  return sc;
+}
+const std = (color, metalness, roughness, extra = {}) => new THREE.MeshStandardMaterial({ color, metalness, roughness, ...extra });
+const chrome = std(0xc4c9d1, 1, 0.28), steel = std(0x8e949d, 1, 0.42), black = std(0x24272d, 0.7, 0.34);
+const plastic = std(0x2b2f36, 0.15, 0.55), capM = std(0xb9bec6, 0.9, 0.34);
+const glow = (c) => std(c, 0.8, 0.3, { emissive: 0xff4d00, emissiveIntensity: 0 });
+
+function cam(aspect, tgt, dist, az, el, fov = 30) {
+  const c = new THREE.PerspectiveCamera(fov, aspect, 1, 600);
+  c.position.set(tgt.x + dist * Math.cos(el) * Math.sin(az), tgt.y + dist * Math.sin(el), tgt.z + dist * Math.cos(el) * Math.cos(az));
+  c.lookAt(tgt); c.updateMatrixWorld(); return c;
+}
+const PH = 525, PA = 215, PB = 752, ASP = W / PH;
+
+// ---------- top: membrane (rubber dome) ----------
+const sA = makeScene(-3.5);
+const MA = { caseM: plastic, plate: steel, film: std(0xaab3c0, 0.3, 0.45), spacer: std(0x30353d, 0.0, 0.7),
+  rubber: std(0x6a717b, 0.0, 0.7), carbon: std(0x15161a, 0.2, 0.6), pad: glow(0xc9ced6), cap: capM, plunger: capM };
+const memB = K.membraneBoard(MA); sA.add(memB);
+const camA = cam(ASP, new THREE.Vector3(-0.5, 10.4, -4), 76, -7 * D, 7 * D, 22);
+
+// ---------- bottom: mechanical switch ----------
+const sB = makeScene(-4.6);
+const MB = { caseM: plastic, pcb: std(0x1b1d22, 0.3, 0.6), plate: steel, housing: black,
+  leaf: glow(0xd9b45a), solder: std(0xbfc4cc, 1, 0.3), cap: capM,
+  stem: std(0xff7a1a, 0.55, 0.3, { emissive: 0xff4d00, emissiveIntensity: 0.35 }), spring: std(0x7fb6ff, 0.9, 0.25) };
+const mechB = K.mechBoard(MB); sB.add(mechB);
+const camB = cam(ASP, new THREE.Vector3(-0.5, 10.4, -4), 76, -7 * D, 7 * D, 22);
+
+// ---------- motion ----------
+// membrane: period 2 s, full stroke; registers only when the films touch at the very bottom
+function memPress(t) { const u = t % 2; return K.MEM.travel * (ease((u - 0.15) / 0.6) - ease((u - 1.0) / 0.6)); }
+// mechanical: B = period 1 s, 2.6 mm strokes (past the 2 mm actuation point, no bottoming out)
+//             A = period 2 s, full 4 mm strokes like the membrane key
+const mechPress = MODE === 'B'
+  ? t => { const u = t % 1; return 2.6 * (ease((u - 0.08) / 0.36) - ease((u - 0.5) / 0.36)); }
+  : t => { const u = t % 2; return K.MECH.travel * (ease((u - 0.15) / 0.6) - ease((u - 1.0) / 0.6)); };
+const scanOn = (f, setter) => { const on = []; let prev = false; for (let t = 0; t < DUR; t += 0.001) { const c = setter(f(t)); if (c && !prev) on.push(+t.toFixed(3)); prev = c; } return on; };
+const memOn = scanOn(memPress, p => memB.userData.setPress(1, p));
+const mechOn = scanOn(mechPress, p => mechB.userData.setPress(1, p));
+window.CLICKS = mechOn; window.TAPS = memOn; window.DURATION = DUR;
+
+window.renderAt = t => {
+  t = ((t % DUR) + DUR) % DUR;
+  const ca = memB.userData.setPress(1, memPress(t)), cb = mechB.userData.setPress(1, mechPress(t));
+  MA.pad.emissiveIntensity = ca ? 4 : 0; MB.leaf.emissiveIntensity = cb ? 1.2 : 0;
+  renderer.setClearColor(0, 0); renderer.clear(); renderer.setScissorTest(true);
+  for (const [sc, c, top] of [[sA, camA, PA], [sB, camB, PB]]) {
+    const y = H - top - PH; renderer.setViewport(0, y, W, PH); renderer.setScissor(0, y, W, PH); renderer.render(sc, c);
+  }
+  renderer.setScissorTest(false);
+  let pops = '';
+  const pop = (list, word, cls, anchor, camera, top) => {
+    const [x, y] = S.toScreen(anchor, camera, W, PH, [0, top, W, PH]);
+    for (const c of list) { const d = (((t - c) % DUR) + DUR) % DUR; if (d > 0.4) continue;
+      const sc = 0.6 + 0.5 * Math.min(1, d / 0.07), o = 1 - clamp((d - 0.22) / 0.18);
+      pops += `<div class="pop ${cls}" style="left:${x}px;top:${y}px;font-size:44px;opacity:${o};transform:translate(-50%,-50%) scale(${sc}) rotate(-8deg)">${word}</div>`; }
+  };
+  pop(memOn, '꾹!', 'w', new THREE.Vector3(10.5, 2.5, 3), camA, PA);
+  pop(mechOn, '딸깍!', '', new THREE.Vector3(10.5, 2.5, 3), camB, PB);
+  document.getElementById('pops').innerHTML = pops;
+  const counter = (id, ends) => { let n = 0, last = -9; for (const e of ends) if (t >= e) { n++; last = e; }
+    const el = document.getElementById(id), d = t - last, sc = d < 0.25 ? 1 + 0.35 * Math.sin(Math.PI * d / 0.25) : 1;
+    el.textContent = n; el.style.transform = `scale(${sc})`; };
+  counter('cA', memOn); counter('cB', mechOn);
+};
+window.renderAt(q.has('t') ? +q.get('t') : 0.5);
+window.__done = true;
+</script>
+</body></html>
