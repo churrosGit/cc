@@ -18,8 +18,8 @@
   .cnt{position:absolute;left:28px;z-index:3;padding:8px 18px 6px;border-radius:16px;background:rgba(10,11,14,.72);
     border:1.5px solid rgba(255,255,255,.12);line-height:1}
   .cnt small{display:block;font-size:19px;font-weight:700;color:rgba(255,255,255,.75);letter-spacing:.02em}
-  .cnt b{display:inline-block;font-size:54px;font-weight:900;color:#ff8a2a;transform-origin:50% 70%}
-  .cnt i{font-style:normal;font-size:28px;font-weight:800;color:#fff;margin-left:3px}
+  .cnt b{display:inline-block;font-size:54px;font-weight:900;color:#ff8a2a;transform-origin:30% 70%;min-width:78px}
+  .cnt i{font-style:normal;font-size:28px;font-weight:800;color:#fff;margin-left:8px}
   .pop{position:absolute;z-index:4;font-weight:900;color:#ff8a2a;text-shadow:0 0 18px rgba(255,120,30,.7),0 3px 8px rgba(0,0,0,.8)}
   .pop.w{color:#e9ecf1;text-shadow:0 0 14px rgba(255,255,255,.35),0 3px 8px rgba(0,0,0,.8)}
 </style></head><body>
@@ -28,8 +28,8 @@
 <div id="title">일반 키보드와<br><span>기계식 키보드</span>의 차이</div>
 <div class="cap" style="top:215px"><span class="chip" style="background:#3b4250">일반 키보드 · 멤브레인</span><div class="line">고무 돔을 <b>바닥까지 꾹</b> 눌러야 막이 닿아 입력돼요</div></div>
 <div class="cap" style="top:752px"><span class="chip" style="background:#ff8a2a">기계식 키보드</span><div class="line">키마다 <b>스프링 스위치</b>, 절반만 눌러도 입력돼요</div></div>
-<div class="cnt" style="bottom:568px"><small>입력 횟수</small><b id="cA">0</b><i>회</i></div>
-<div class="cnt" style="bottom:31px"><small>입력 횟수</small><b id="cB">0</b><i>회</i></div>
+<div class="cnt" style="bottom:568px"><small>누른 깊이</small><b id="cA">0.0</b><i>mm</i></div>
+<div class="cnt" style="bottom:31px"><small>누른 깊이</small><b id="cB">0.0</b><i>mm</i></div>
 <div id="pops"></div>
 <script type="module">
 import * as THREE from 'three';
@@ -37,7 +37,6 @@ import * as S from './scene3d.js';
 import * as K from './keyboard3d.js';
 const W = 720, H = 1280, D = Math.PI / 180, DUR = 16;
 const q = new URLSearchParams(location.search);
-const MODE = q.get('mode') || 'B';           // A: same tempo, full strokes · B: mechanical half-strokes at double tempo
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const ease = x => { x = clamp(x); return x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
 await document.fonts.ready;
@@ -84,11 +83,8 @@ const camB = cam(ASP, new THREE.Vector3(-0.5, 10.4, -4), 76, -7 * D, 7 * D, 22);
 // ---------- motion ----------
 // membrane: period 2 s, full stroke; registers only when the films touch at the very bottom
 function memPress(t) { const u = t % 2; return K.MEM.travel * (ease((u - 0.15) / 0.6) - ease((u - 1.0) / 0.6)); }
-// mechanical: B = period 1 s, 2.6 mm strokes (past the 2 mm actuation point, no bottoming out)
-//             A = period 2 s, full 4 mm strokes like the membrane key
-const mechPress = MODE === 'B'
-  ? t => { const u = t % 1; return 2.6 * (ease((u - 0.08) / 0.36) - ease((u - 0.5) / 0.36)); }
-  : t => { const u = t % 2; return K.MECH.travel * (ease((u - 0.15) / 0.6) - ease((u - 1.0) / 0.6)); };
+// mechanical: same tempo and start, full 4 mm stroke; the contacts close at 2 mm on the way down
+function mechPress(t) { const u = t % 2; return K.MECH.travel * (ease((u - 0.15) / 0.6) - ease((u - 1.0) / 0.6)); }
 const scanOn = (f, setter) => { const on = []; let prev = false; for (let t = 0; t < DUR; t += 0.001) { const c = setter(f(t)); if (c && !prev) on.push(+t.toFixed(3)); prev = c; } return on; };
 const memOn = scanOn(memPress, p => memB.userData.setPress(1, p));
 const mechOn = scanOn(mechPress, p => mechB.userData.setPress(1, p));
@@ -97,7 +93,7 @@ window.CLICKS = mechOn; window.TAPS = memOn; window.DURATION = DUR;
 window.renderAt = t => {
   t = ((t % DUR) + DUR) % DUR;
   const ca = memB.userData.setPress(1, memPress(t)), cb = mechB.userData.setPress(1, mechPress(t));
-  MA.pad.emissiveIntensity = ca ? 4 : 0; MB.leaf.emissiveIntensity = cb ? 1.2 : 0;
+  MA.pad.emissiveIntensity = ca ? 7 : 0; MB.leaf.emissiveIntensity = cb ? 1.2 : 0;
   renderer.setClearColor(0, 0); renderer.clear(); renderer.setScissorTest(true);
   for (const [sc, c, top] of [[sA, camA, PA], [sB, camB, PB]]) {
     const y = H - top - PH; renderer.setViewport(0, y, W, PH); renderer.setScissor(0, y, W, PH); renderer.render(sc, c);
@@ -113,10 +109,11 @@ window.renderAt = t => {
   pop(memOn, '꾹!', 'w', new THREE.Vector3(10.5, 2.5, 3), camA, PA);
   pop(mechOn, '딸깍!', '', new THREE.Vector3(10.5, 2.5, 3), camB, PB);
   document.getElementById('pops').innerHTML = pops;
-  const counter = (id, ends) => { let n = 0, last = -9; for (const e of ends) if (t >= e) { n++; last = e; }
-    const el = document.getElementById(id), d = t - last, sc = d < 0.25 ? 1 + 0.35 * Math.sin(Math.PI * d / 0.25) : 1;
-    el.textContent = n; el.style.transform = `scale(${sc})`; };
-  counter('cA', memOn); counter('cB', mechOn);
+  // depth readout: live press depth in mm, pops when the key registers
+  const depth = (id, p, ons) => { let last = -9; for (const e of ons) if (t >= e) last = e;
+    const d = t - last, sc = d < 0.25 ? 1 + 0.35 * Math.sin(Math.PI * d / 0.25) : 1, el = document.getElementById(id);
+    el.textContent = (Math.round(p * 10 + 1e-6) / 10).toFixed(1); el.style.transform = `scale(${sc})`; };
+  depth('cA', memPress(t), memOn); depth('cB', mechPress(t), mechOn);
 };
 window.renderAt(q.has('t') ? +q.get('t') : 0.5);
 window.__done = true;
