@@ -1,0 +1,58 @@
+{
+ "cross": {
+  "url": "https://arxiv.org/html/2603.02705v2",
+  "view": {
+   "mark": "cross",
+   "top": -760
+  },
+  "marks": [
+   {
+    "id": "cross",
+    "text": "Similarly, water-intensive golf courses",
+    "tag": "p",
+    "lines": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "마찬가지로, 물을 많이 쓰는",
+     "골프장은, 수돗물 사용이",
+     "점점 규제되고 있으며 전체 물 사용량의",
+     "약 10% 이하에 불과한데도",
+     "(부록 I), 흔히 비교 대상이 된다",
+     "데이터센터가 직접 쓰는 수돗물과.",
+     "하지만 집계 범위와 물의 종류가",
+     "근본적으로 달라 이런 비교는",
+     "의미가 없으며,",
+     "공공 수도 시스템이 겪는 문제를 가리고",
+     "여론을 오도한다."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "fs": 17,
+    "box": false,
+    "overlay": true,
+    "up": 4,
+    "lh": 42
+   }
+  ],
+  "css": ".ltx_para p, p.ltx_p{hyphens:none !important;-webkit-hyphens:none !important;text-align:left !important}"
+ }
+}
