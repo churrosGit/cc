@@ -1,6 +1,6 @@
 {
  "fps": 30,
- "duration": 47.17,
+ "duration": 42.06,
  "content_y": 534,
  "content_h": 810,
  "title": "데이터센터 물 낭비는<br>거짓말이다?",
@@ -19,7 +19,7 @@
    ]
   },
   {
-   "start": 4.13,
+   "start": 3.71,
    "type": "pieces",
    "items": [
     {
@@ -32,7 +32,7 @@
    ]
   },
   {
-   "start": 8.74,
+   "start": 7.81,
    "type": "pieces",
    "items": [
     {
@@ -45,12 +45,12 @@
    ]
   },
   {
-   "start": 12.61,
+   "start": 11.23,
    "type": "meme",
    "src": "/home/user/cc/shorts-assets/memes/pepe/thumbs-up.jpg"
   },
   {
-   "start": 15.53,
+   "start": 13.8,
    "type": "pieces",
    "items": [
     {
@@ -126,7 +126,7 @@
       "bounce": [
        [
         0.25,
-        1.97,
+        1.74,
         [
          0,
          1,
@@ -145,7 +145,7 @@
    ]
   },
   {
-   "start": 17.5,
+   "start": 15.54,
    "type": "pieces",
    "items": [
     {
@@ -227,7 +227,7 @@
       "bounce": [
        [
         0.05,
-        2.88,
+        2.61,
         [
          4,
          5
@@ -244,7 +244,7 @@
    ]
   },
   {
-   "start": 20.56,
+   "start": 18.27,
    "type": "pieces",
    "items": [
     {
@@ -325,16 +325,16 @@
       ],
       "bounce": [
        [
-        0.22,
-        2.41,
+        0.18,
+        2.15,
         [
          7,
          8
         ]
        ],
        [
-        2.51,
-        4.75,
+        2.25,
+        4.26,
         [
          9,
          10
@@ -351,7 +351,7 @@
    ]
   },
   {
-   "start": 25.48,
+   "start": 22.66,
    "type": "pieces",
    "items": [
     {
@@ -364,7 +364,7 @@
    ]
   },
   {
-   "start": 29.95,
+   "start": 26.66,
    "type": "pieces",
    "items": [
     {
@@ -416,7 +416,7 @@
       "bounce": [
        [
         0.05,
-        2.21,
+        1.99,
         [
          2,
          3,
@@ -434,7 +434,7 @@
    ]
   },
   {
-   "start": 32.33,
+   "start": 28.78,
    "type": "pieces",
    "items": [
     {
@@ -479,8 +479,8 @@
       ],
       "bounce": [
        [
-        1.48,
-        3.9,
+        1.3,
+        3.49,
         [
          2,
          3,
@@ -498,7 +498,7 @@
    ]
   },
   {
-   "start": 36.41,
+   "start": 32.39,
    "type": "pieces",
    "items": [
     {
@@ -573,16 +573,16 @@
       ],
       "bounce": [
        [
-        0.81,
-        1.79,
+        0.7,
+        1.59,
         [
          6,
          7
         ]
        ],
        [
-        1.84,
-        6.11,
+        1.64,
+        5.49,
         [
          8,
          9
@@ -599,7 +599,7 @@
    ]
   },
   {
-   "start": 42.7,
+   "start": 38.01,
    "type": "pieces",
    "items": [
     {
@@ -612,106 +612,122 @@
    ]
   },
   {
-   "start": 44.21,
+   "start": 39.33,
    "type": "meme",
    "src": "/home/user/cc/shorts-assets/memes/pepe/shrug-confused.jpg"
   }
  ],
  "audio": [
   {
-   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
-   "at": 3.83,
+   "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
+   "at": 3.29,
    "from": 0,
-   "dur": 0.75,
-   "gain_db": -6.3,
+   "dur": 1.06,
+   "gain_db": -0.8,
    "fade": 0.03
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
-   "at": 8.47,
+   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
+   "at": 7.51,
    "from": 0,
-   "dur": 0.72,
-   "gain_db": -4.7,
+   "dur": 0.75,
+   "gain_db": -2.3,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/042_바람2.mp3",
+   "at": 10.94,
+   "from": 0,
+   "dur": 0.65,
+   "gain_db": -3.6,
    "fade": 0.03
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/015_띠링.mp3",
-   "at": 12.61,
+   "at": 11.38,
    "from": 0,
    "dur": 0.94,
-   "gain_db": 2.3,
+   "gain_db": 4.3,
    "fade": 0.05
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/096_후욱 -a짧은2.mp3",
-   "at": 15.4,
+   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
+   "at": 13.38,
    "from": 0,
-   "dur": 0.37,
-   "gain_db": 0.5,
+   "dur": 1.06,
+   "gain_db": -0.8,
    "fade": 0.03
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
-   "at": 17.08,
+   "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
+   "at": 15.12,
    "from": 0,
    "dur": 1.06,
-   "gain_db": -4.8,
+   "gain_db": -0.8,
    "fade": 0.03
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
-   "at": 20.26,
+   "at": 17.97,
    "from": 0,
    "dur": 0.75,
-   "gain_db": -6.3,
+   "gain_db": -2.3,
    "fade": 0.03
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
-   "at": 25.21,
+   "src": "/home/user/cc/shorts-assets/sfx/042_바람2.mp3",
+   "at": 22.37,
    "from": 0,
-   "dur": 0.72,
-   "gain_db": -4.7,
-   "fade": 0.03
-  },
-  {
-   "src": "/home/user/cc/shorts-assets/sfx/096_후욱 -a짧은2.mp3",
-   "at": 29.82,
-   "from": 0,
-   "dur": 0.37,
-   "gain_db": 0.5,
+   "dur": 0.65,
+   "gain_db": -3.6,
    "fade": 0.03
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
-   "at": 31.91,
+   "at": 26.24,
    "from": 0,
    "dur": 1.06,
-   "gain_db": -4.8,
+   "gain_db": -0.8,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
+   "at": 28.36,
+   "from": 0,
+   "dur": 1.06,
+   "gain_db": -0.8,
    "fade": 0.03
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
-   "at": 36.11,
+   "at": 32.09,
    "from": 0,
    "dur": 0.75,
-   "gain_db": -6.3,
+   "gain_db": -2.3,
    "fade": 0.03
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
-   "at": 42.43,
+   "src": "/home/user/cc/shorts-assets/sfx/042_바람2.mp3",
+   "at": 37.72,
    "from": 0,
-   "dur": 0.72,
-   "gain_db": -4.7,
+   "dur": 0.65,
+   "gain_db": -3.6,
+   "fade": 0.03
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
+   "at": 38.91,
+   "from": 0,
+   "dur": 1.06,
+   "gain_db": -0.8,
    "fade": 0.03
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/019_퓨히익.mp3",
-   "at": 44.21,
+   "at": 39.48,
    "from": 0.85,
    "dur": 1.5,
-   "gain_db": 0.7,
+   "gain_db": 3.7,
    "fade": 0.05
   }
  ],
@@ -721,63 +737,63 @@
    "데이터센터가 물을 낭비한다는 건<br>거짓말이라는 글이 화제입니다"
   ],
   [
-   4.31,
+   3.84,
    "2024년 미국 데이터센터가<br>쓴 물은 최대 230억 갤런"
   ],
   [
-   8.91,
+   7.93,
    "같은 해 골프장이 쓴 물의<br>4%밖에 안 된다는 겁니다"
   ],
   [
-   12.79,
+   11.36,
    "원문과 대조해 보니<br>숫자는 맞았습니다"
   ],
   [
-   15.7,
+   13.93,
    "그런데 근거로 든<br>논문에는"
   ],
   [
-   17.53,
+   15.57,
    "바로 이 비교를 경계하는<br>내용이 적혀 있습니다"
   ],
   [
-   20.73,
+   18.4,
    "골프장과 비교하는 건<br>의미가 없고"
   ],
   [
-   23.02,
+   20.46,
    "오히려 여론을<br>오도한다는 겁니다"
   ],
   [
-   25.66,
+   22.78,
    "골프장 물은 대부분<br>지하수, 호수, 재활용수이고"
   ],
   [
-   29.98,
+   26.69,
    "수돗물은<br>10%도 안 됩니다"
   ],
   [
-   32.51,
+   28.9,
    "반면 데이터센터는 주로 주민들과<br>같은 수돗물을 끌어다 씁니다"
   ],
   [
-   36.58,
+   32.52,
    "논문은 2030년까지<br>뉴욕시 하루 급수량에 맞먹는"
   ],
   [
-   39.82,
+   35.44,
    "수도 시설이 새로<br>필요할 수 있다고 내다봤습니다"
   ],
   [
-   42.87,
+   38.13,
    "숫자는 맞았지만"
   ],
   [
-   44.26,
+   39.38,
    "결론은 논문과<br>달랐던 셈입니다"
   ],
   [
-   46.77,
+   41.67,
    ""
   ]
  ]

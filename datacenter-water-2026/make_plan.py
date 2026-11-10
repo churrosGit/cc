@@ -68,23 +68,25 @@ segments = [
     {"start": b['m2'], "type": "meme", "src": MEMES + "shrug-confused.jpg"},
 ]
 
-# sound effect at every scene change: whooshes in turn, a reaction sound on the two meme cuts.
-# gain brings each sound's loudest 100 ms to about -15 dB; 'peak' = where the whoosh peaks inside the file.
-WHOOSH = [("098_후욱 -b중간2.wav", -8.7, 0.30, 0.75), ("041_바람.mp3", -10.3, 0.27, 0.72),
-          ("096_후욱 -a짧은2.mp3", -15.5, 0.13, 0.37), ("070_휘익.mp3", -10.2, 0.42, 1.06)]
-REACT = {"m1": ("015_띠링.mp3", -17.3, 0, 0.94, -15),
-         "m2": ("019_퓨히익.mp3", -16.7, 0.85, 1.5, -16)}
-audio, k = [], 0
-for seg in segments[1:]:
+# sound effect at EVERY scene change: a whoosh on each cut (meme cuts also get a reaction sound).
+# gain brings each sound's loudest 100 ms to TARGET (narration's typical loud 100 ms is about -15 on this scale,
+# so the whoosh is clearly heard over it); 'peak' = where the whoosh peaks inside the file, so it peaks on the cut.
+TARGET = -11
+WHOOSH = [("002_휙(만화적).mp3", -10.2, 0.42, 1.06), ("098_후욱 -b중간2.wav", -8.7, 0.30, 0.75),
+          ("042_바람2.mp3", -7.4, 0.29, 0.65), ("070_휘익.mp3", -10.2, 0.42, 1.06)]
+REACT = {"m1": ("015_띠링.mp3", -17.3, 0, 0.94, -13),
+         "m2": ("019_퓨히익.mp3", -16.7, 0.85, 1.5, -13)}
+audio = []
+for k, seg in enumerate(segments[1:]):
     t = seg['start']
+    f, loud, peak, dur = WHOOSH[k % len(WHOOSH)]
+    audio.append({"src": os.path.join(SFX, f), "at": round(max(t - peak, 0), 2), "from": 0, "dur": dur,
+                  "gain_db": round(TARGET - loud, 1), "fade": 0.03})
     key = next((m for m in REACT if abs(b[m] - t) < 1e-6), None)
     if key:
         f, loud, frm, dur, target = REACT[key]
-        audio.append({"src": os.path.join(SFX, f), "at": t, "from": frm, "dur": dur, "gain_db": round(target - loud, 1), "fade": 0.05})
-    else:
-        f, loud, peak, dur = WHOOSH[k % len(WHOOSH)]; k += 1
-        audio.append({"src": os.path.join(SFX, f), "at": round(max(t - peak, 0), 2), "from": 0, "dur": dur,
-                      "gain_db": round(-15 - loud, 1), "fade": 0.03})
+        audio.append({"src": os.path.join(SFX, f), "at": round(t + 0.15, 2), "from": frm, "dur": dur,
+                      "gain_db": round(target - loud, 1), "fade": 0.05})
 
 SUBS = [  # (sentence, first word, text)
     (0, 0, "데이터센터가 물을 낭비한다는 건<br>거짓말이라는 글이 화제입니다"),

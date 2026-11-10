@@ -1,4 +1,4 @@
-"""Narration with edge-tts (ko-KR-InJoonNeural, +22%), one sentence at a time so the word timings are exact.
+"""Narration with edge-tts (ko-KR-InJoonNeural, +35%), one sentence at a time so the word timings are exact.
 Usage: python3 make_audio.py <workDir>   -> <workDir>/narration.wav and ./words.json
 Each sentence is trimmed to its speech (+0.12 s), then joined with GAP of silence; the result is levelled to -16 LUFS."""
 import json, os, subprocess, sys
@@ -10,7 +10,7 @@ import edge_tts
 work = sys.argv[1]
 here = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(work, exist_ok=True)
-VOICE, RATE, LEAD, GAP, TAIL = 'ko-KR-InJoonNeural', '+22%', 0.15, 0.35, 0.12
+VOICE, RATE, LEAD, GAP, TAIL = 'ko-KR-InJoonNeural', '+35%', 0.15, 0.25, 0.10
 
 
 def ff(args):
