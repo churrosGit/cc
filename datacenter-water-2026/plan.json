@@ -637,11 +637,11 @@
    "peak_at": 8.03
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/015_띠링.mp3",
-   "at": 11.525,
+   "src": "/home/user/cc/shorts-assets/sfx/038_뿅.mp3",
+   "at": 11.535,
    "from": 0,
-   "dur": 0.265,
-   "gain_db": -0.8,
+   "dur": 0.255,
+   "gain_db": -3.9,
    "fade": 0.04,
    "peak_at": 11.61
   },

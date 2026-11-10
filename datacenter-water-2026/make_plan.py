@@ -80,7 +80,7 @@ import subprocess
 import numpy as np
 TARGET, PRE, POST = -15.0, 0.12, 0.18
 WHOOSH = ["002_휙(만화적).mp3", "098_후욱 -b중간2.wav", "042_바람2.mp3", "041_바람.mp3"]
-REACT = {"m1": "015_띠링.mp3", "m2": "046_푸직.mp3"}  # meme cuts get a reaction sound instead of a whoosh
+REACT = {"m1": "038_뿅.mp3", "m2": "046_푸직.mp3"}  # meme cuts get a reaction sound instead of a whoosh
 
 
 def env(path):  # 50 ms RMS envelope (dBFS) every 5 ms
