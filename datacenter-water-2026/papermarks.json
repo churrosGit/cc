@@ -54,5 +54,130 @@
    }
   ],
   "css": ".ltx_para p, p.ltx_p{hyphens:none !important;-webkit-hyphens:none !important;text-align:left !important}"
+ },
+ "absh": {
+  "url": "https://arxiv.org/abs/2603.02705",
+  "h": 2600,
+  "marks": [
+   {
+    "id": "head",
+    "text": "Small Bottle, Big Pipe",
+    "tag": "h1",
+    "lines": [
+     "작은 병, 큰 파이프:",
+     "데이터센터가 공공 수도 시스템에",
+     "미치는 영향을 측정하고",
+     "대응하는 방법"
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "box": false,
+    "overlay": true,
+    "fs": 20,
+    "up": 5,
+    "lh": 58
+   },
+   {
+    "id": "abs",
+    "text": "Our analysis indicates",
+    "lines": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     "공공 수도에 미치는 영향을 살폈다. 분석 결과,",
+     "2024년의 물 사용 효율이 그대로라면,",
+     "미국 데이터센터는 2030년까지 하루",
+     "6억 9,700만~14억 5,100만 갤런의",
+     "수도 설비가 새로 필요하며, 이는 뉴욕시의",
+     "하루 평균 공급량(약 10억 갤런)에 맞먹는다."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "box": false,
+    "overlay": true,
+    "fs": 16,
+    "up": 4,
+    "lh": 40
+   }
+  ]
+ },
+ "golfp": {
+  "url": "https://arxiv.org/html/2603.02705v2",
+  "css": ".ltx_para p, p.ltx_p{hyphens:none !important;-webkit-hyphens:none !important;text-align:left !important}",
+  "view": {
+   "mark": "g",
+   "top": -20
+  },
+  "marks": [
+   {
+    "id": "g",
+    "text": "Although golf courses represent",
+    "tag": "p",
+    "lines": [
+     "",
+     "",
+     "골프장은 전체 취수량으로 보면",
+     "상당한 물 사용처이지만,",
+     "수돗물(식수)에 의존하는 비중은",
+     "비교적 낮아,",
+     "전체 사용량의 약 7~9%에 그친다",
+     "(2005~2024년, 전국 기준)."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "box": false,
+    "overlay": true,
+    "fs": 17,
+    "up": 4,
+    "lh": 42
+   }
+  ]
+ },
+ "intro": {
+  "url": "https://arxiv.org/html/2603.02705v2",
+  "css": ".ltx_para p, p.ltx_p{hyphens:none !important;-webkit-hyphens:none !important;text-align:left !important}",
+  "view": {
+   "mark": "i",
+   "top": 80
+  },
+  "marks": [
+   {
+    "id": "i",
+    "text": "national reservoir",
+    "tag": "p",
+    "lines": [
+     "데이터센터가 끌어다 쓸 수 있는",
+     "'국가 저수지'는 없다. 대신 데이터센터는",
+     "주로 정수된 물, 그중에서도",
+     "대부분 식수를 지역 공공",
+     "",
+     "수도 시스템에서 공급받는다."
+    ],
+    "color": "red",
+    "bg": 0.3,
+    "pad": 0,
+    "weight": 500,
+    "box": false,
+    "overlay": true,
+    "fs": 17,
+    "up": 4,
+    "lh": 42
+   }
+  ]
  }
 }
