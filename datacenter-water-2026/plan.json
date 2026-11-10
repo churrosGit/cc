@@ -1,6 +1,6 @@
 {
  "fps": 30,
- "duration": 42.06,
+ "duration": 44.31,
  "content_y": 534,
  "content_h": 810,
  "title": "데이터센터 물 낭비는<br>거짓말이다?",
@@ -19,7 +19,7 @@
    ]
   },
   {
-   "start": 3.71,
+   "start": 3.79,
    "type": "pieces",
    "items": [
     {
@@ -32,7 +32,7 @@
    ]
   },
   {
-   "start": 7.81,
+   "start": 8.03,
    "type": "pieces",
    "items": [
     {
@@ -45,12 +45,12 @@
    ]
   },
   {
-   "start": 11.23,
+   "start": 11.61,
    "type": "meme",
    "src": "/home/user/cc/shorts-assets/memes/pepe/thumbs-up.jpg"
   },
   {
-   "start": 13.8,
+   "start": 14.33,
    "type": "pieces",
    "items": [
     {
@@ -126,7 +126,7 @@
       "bounce": [
        [
         0.25,
-        1.74,
+        1.98,
         [
          0,
          1,
@@ -145,7 +145,7 @@
    ]
   },
   {
-   "start": 15.54,
+   "start": 16.31,
    "type": "pieces",
    "items": [
     {
@@ -227,7 +227,7 @@
       "bounce": [
        [
         0.05,
-        2.61,
+        2.74,
         [
          4,
          5
@@ -244,7 +244,7 @@
    ]
   },
   {
-   "start": 18.27,
+   "start": 19.25,
    "type": "pieces",
    "items": [
     {
@@ -325,16 +325,16 @@
       ],
       "bounce": [
        [
-        0.18,
-        2.15,
+        0.25,
+        2.22,
         [
          7,
          8
         ]
        ],
        [
-        2.25,
-        4.26,
+        2.32,
+        4.33,
         [
          9,
          10
@@ -351,7 +351,7 @@
    ]
   },
   {
-   "start": 22.66,
+   "start": 23.78,
    "type": "pieces",
    "items": [
     {
@@ -364,7 +364,7 @@
    ]
   },
   {
-   "start": 26.66,
+   "start": 28.05,
    "type": "pieces",
    "items": [
     {
@@ -416,7 +416,7 @@
       "bounce": [
        [
         0.05,
-        1.99,
+        2.1,
         [
          2,
          3,
@@ -434,7 +434,7 @@
    ]
   },
   {
-   "start": 28.78,
+   "start": 30.35,
    "type": "pieces",
    "items": [
     {
@@ -479,8 +479,8 @@
       ],
       "bounce": [
        [
-        1.3,
-        3.49,
+        1.38,
+        3.57,
         [
          2,
          3,
@@ -498,7 +498,7 @@
    ]
   },
   {
-   "start": 32.39,
+   "start": 34.12,
    "type": "pieces",
    "items": [
     {
@@ -573,16 +573,16 @@
       ],
       "bounce": [
        [
-        0.7,
-        1.59,
+        0.77,
+        1.66,
         [
          6,
          7
         ]
        ],
        [
-        1.64,
-        5.49,
+        1.71,
+        5.56,
         [
          8,
          9
@@ -599,7 +599,7 @@
    ]
   },
   {
-   "start": 38.01,
+   "start": 39.88,
    "type": "pieces",
    "items": [
     {
@@ -612,7 +612,7 @@
    ]
   },
   {
-   "start": 39.33,
+   "start": 41.47,
    "type": "meme",
    "src": "/home/user/cc/shorts-assets/memes/pepe/shrug-confused.jpg"
   }
@@ -620,115 +620,111 @@
  "audio": [
   {
    "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
-   "at": 3.29,
-   "from": 0,
-   "dur": 1.06,
-   "gain_db": -0.8,
-   "fade": 0.03
+   "at": 3.67,
+   "from": 0.315,
+   "dur": 0.3,
+   "gain_db": -8.5,
+   "fade": 0.04,
+   "peak_at": 3.79
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
-   "at": 7.51,
-   "from": 0,
-   "dur": 0.75,
-   "gain_db": -2.3,
-   "fade": 0.03
-  },
-  {
-   "src": "/home/user/cc/shorts-assets/sfx/042_바람2.mp3",
-   "at": 10.94,
-   "from": 0,
-   "dur": 0.65,
-   "gain_db": -3.6,
-   "fade": 0.03
+   "at": 7.91,
+   "from": 0.165,
+   "dur": 0.3,
+   "gain_db": -11.4,
+   "fade": 0.04,
+   "peak_at": 8.03
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/015_띠링.mp3",
-   "at": 11.38,
+   "at": 11.525,
    "from": 0,
-   "dur": 0.94,
-   "gain_db": 4.3,
-   "fade": 0.05
-  },
-  {
-   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
-   "at": 13.38,
-   "from": 0,
-   "dur": 1.06,
+   "dur": 0.265,
    "gain_db": -0.8,
-   "fade": 0.03
-  },
-  {
-   "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
-   "at": 15.12,
-   "from": 0,
-   "dur": 1.06,
-   "gain_db": -0.8,
-   "fade": 0.03
-  },
-  {
-   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
-   "at": 17.97,
-   "from": 0,
-   "dur": 0.75,
-   "gain_db": -2.3,
-   "fade": 0.03
+   "fade": 0.04,
+   "peak_at": 11.61
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/042_바람2.mp3",
-   "at": 22.37,
-   "from": 0,
-   "dur": 0.65,
-   "gain_db": -3.6,
-   "fade": 0.03
+   "at": 14.21,
+   "from": 0.13,
+   "dur": 0.3,
+   "gain_db": -11.3,
+   "fade": 0.04,
+   "peak_at": 14.33
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
-   "at": 26.24,
-   "from": 0,
-   "dur": 1.06,
-   "gain_db": -0.8,
-   "fade": 0.03
+   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
+   "at": 16.19,
+   "from": 0.14,
+   "dur": 0.3,
+   "gain_db": -10.0,
+   "fade": 0.04,
+   "peak_at": 16.31
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
-   "at": 28.36,
-   "from": 0,
-   "dur": 1.06,
-   "gain_db": -0.8,
-   "fade": 0.03
+   "at": 19.13,
+   "from": 0.315,
+   "dur": 0.3,
+   "gain_db": -8.5,
+   "fade": 0.04,
+   "peak_at": 19.25
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
-   "at": 32.09,
-   "from": 0,
-   "dur": 0.75,
-   "gain_db": -2.3,
-   "fade": 0.03
+   "at": 23.66,
+   "from": 0.165,
+   "dur": 0.3,
+   "gain_db": -11.4,
+   "fade": 0.04,
+   "peak_at": 23.78
   },
   {
    "src": "/home/user/cc/shorts-assets/sfx/042_바람2.mp3",
-   "at": 37.72,
-   "from": 0,
-   "dur": 0.65,
-   "gain_db": -3.6,
-   "fade": 0.03
+   "at": 27.93,
+   "from": 0.13,
+   "dur": 0.3,
+   "gain_db": -11.3,
+   "fade": 0.04,
+   "peak_at": 28.05
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/070_휘익.mp3",
-   "at": 38.91,
-   "from": 0,
-   "dur": 1.06,
-   "gain_db": -0.8,
-   "fade": 0.03
+   "src": "/home/user/cc/shorts-assets/sfx/041_바람.mp3",
+   "at": 30.23,
+   "from": 0.14,
+   "dur": 0.3,
+   "gain_db": -10.0,
+   "fade": 0.04,
+   "peak_at": 30.35
   },
   {
-   "src": "/home/user/cc/shorts-assets/sfx/019_퓨히익.mp3",
-   "at": 39.48,
-   "from": 0.85,
-   "dur": 1.5,
-   "gain_db": 3.7,
-   "fade": 0.05
+   "src": "/home/user/cc/shorts-assets/sfx/002_휙(만화적).mp3",
+   "at": 34.0,
+   "from": 0.315,
+   "dur": 0.3,
+   "gain_db": -8.5,
+   "fade": 0.04,
+   "peak_at": 34.12
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/098_후욱 -b중간2.wav",
+   "at": 39.76,
+   "from": 0.165,
+   "dur": 0.3,
+   "gain_db": -11.4,
+   "fade": 0.04,
+   "peak_at": 39.88
+  },
+  {
+   "src": "/home/user/cc/shorts-assets/sfx/046_푸직.mp3",
+   "at": 41.35,
+   "from": 0.07,
+   "dur": 0.3,
+   "gain_db": -7.6,
+   "fade": 0.04,
+   "peak_at": 41.47
   }
  ],
  "subs": [
@@ -737,63 +733,63 @@
    "데이터센터가 물을 낭비한다는 건<br>거짓말이라는 글이 화제입니다"
   ],
   [
-   3.84,
+   3.99,
    "2024년 미국 데이터센터가<br>쓴 물은 최대 230억 갤런"
   ],
   [
-   7.93,
+   8.23,
    "같은 해 골프장이 쓴 물의<br>4%밖에 안 된다는 겁니다"
   ],
   [
-   11.36,
+   11.81,
    "원문과 대조해 보니<br>숫자는 맞았습니다"
   ],
   [
-   13.93,
+   14.53,
    "그런데 근거로 든<br>논문에는"
   ],
   [
-   15.57,
+   16.47,
    "바로 이 비교를 경계하는<br>내용이 적혀 있습니다"
   ],
   [
-   18.4,
+   19.45,
    "골프장과 비교하는 건<br>의미가 없고"
   ],
   [
-   20.46,
+   21.52,
    "오히려 여론을<br>오도한다는 겁니다"
   ],
   [
-   22.78,
+   23.98,
    "골프장 물은 대부분<br>지하수, 호수, 재활용수이고"
   ],
   [
-   26.69,
+   28.19,
    "수돗물은<br>10%도 안 됩니다"
   ],
   [
-   28.9,
+   30.55,
    "반면 데이터센터는 주로 주민들과<br>같은 수돗물을 끌어다 씁니다"
   ],
   [
-   32.52,
+   34.32,
    "논문은 2030년까지<br>뉴욕시 하루 급수량에 맞먹는"
   ],
   [
-   35.44,
+   37.24,
    "수도 시설이 새로<br>필요할 수 있다고 내다봤습니다"
   ],
   [
-   38.13,
+   40.08,
    "숫자는 맞았지만"
   ],
   [
-   39.38,
+   41.63,
    "결론은 논문과<br>달랐던 셈입니다"
   ],
   [
-   41.67,
+   43.92,
    ""
   ]
  ]

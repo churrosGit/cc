@@ -20,6 +20,10 @@ def word(k, i):  # start of word i of sentence k
     return S[k]['words'][i][0]
 
 
+def comma(k, i):  # middle of the (widened) pause before word i of sentence k
+    return round((S[k]['words'][i - 1][1] + S[k]['words'][i][0]) / 2, 2)
+
+
 def ko(img, lines, bounce):
     # Korean already drawn in the capture; the lines the narration is on pop out as one group
     return {"img": img, "lines": lines, "bounce": bounce, "static": False, "pad": [0, 0]}
@@ -39,9 +43,9 @@ L = {  # Korean line boxes [top, bottom, left, right] printed by newsmark.js
 b = {
     's1': 0.0,
     's2': gap(0), 's3': gap(1), 'm1': gap(2),
-    's5': gap(3), 's5b': round(word(4, 4) - 0.08, 2),       # "바로 이 비교를" -> paragraph
-    's6': gap(4), 's7': gap(5), 's7b': round(word(6, 6) - 0.08, 2),  # "수돗물은 10퍼센트도"
-    's8': gap(6), 's9': gap(7), 's10': gap(8), 'm2': round(word(9, 2) - 0.1, 2),  # "결론은"
+    's5': gap(3), 's5b': comma(4, 4),       # "바로 이 비교를" -> paragraph
+    's6': gap(4), 's7': gap(5), 's7b': comma(6, 6),  # "수돗물은 10퍼센트도"
+    's8': gap(6), 's9': gap(7), 's10': gap(8), 'm2': comma(9, 2),  # "결론은"
 }
 T = lambda k, i: round(word(k, i), 2)
 segments = [
@@ -68,25 +72,44 @@ segments = [
     {"start": b['m2'], "type": "meme", "src": MEMES + "shrug-confused.jpg"},
 ]
 
-# sound effect at EVERY scene change: a whoosh on each cut (meme cuts also get a reaction sound).
-# gain brings each sound's loudest 100 ms to TARGET (narration's typical loud 100 ms is about -15 on this scale,
-# so the whoosh is clearly heard over it); 'peak' = where the whoosh peaks inside the file, so it peaks on the cut.
-TARGET = -11
-WHOOSH = [("002_휙(만화적).mp3", -10.2, 0.42, 1.06), ("098_후욱 -b중간2.wav", -8.7, 0.30, 0.75),
-          ("042_바람2.mp3", -7.4, 0.29, 0.65), ("070_휘익.mp3", -10.2, 0.42, 1.06)]
-REACT = {"m1": ("015_띠링.mp3", -17.3, 0, 0.94, -13),
-         "m2": ("019_퓨히익.mp3", -16.7, 0.85, 1.5, -13)}
-audio = []
-for k, seg in enumerate(segments[1:]):
+# One sound effect on EVERY scene change, all at the same level and all inside the narration's pauses:
+# each sound is cut to a short window around its own loudest moment (PRE before, POST after) and placed so that
+# loudest moment lands exactly on the cut. Gain sets every window's loudest 50 ms to TARGET dBFS
+# (narration on the same scale: median speech -16, loud speech -11.6), so no effect is louder than another.
+import subprocess
+import numpy as np
+TARGET, PRE, POST = -15.0, 0.12, 0.18
+WHOOSH = ["002_휙(만화적).mp3", "098_후욱 -b중간2.wav", "042_바람2.mp3", "041_바람.mp3"]
+REACT = {"m1": "015_띠링.mp3", "m2": "046_푸직.mp3"}  # meme cuts get a reaction sound instead of a whoosh
+
+
+def env(path):  # 50 ms RMS envelope (dBFS) every 5 ms
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-ac', '1', '-ar', '48000', '-f', 'f32le', '-'],
+                         capture_output=True, check=True).stdout
+    a = np.frombuffer(raw, np.float32)
+    return 20 * np.log10(np.array([np.sqrt(np.mean(a[i:i + 2400] ** 2)) for i in range(0, len(a) - 2400, 240)]) + 1e-9)
+
+
+def sfx(name, t):
+    path = os.path.join(SFX, name)
+    e = env(path)
+    peak = int(e.argmax()) * 0.005 + 0.025          # centre of the loudest 50 ms
+    frm = max(peak - PRE, 0)
+    dur = (peak - frm) + POST
+    i0, i1 = int(frm / 0.005), int((frm + dur - 0.05) / 0.005)
+    gain = TARGET - e[i0:max(i1, i0 + 1)].max()
+    return {"src": path, "at": round(t - (peak - frm), 3), "from": round(frm, 3), "dur": round(dur, 3),
+            "gain_db": round(float(gain), 1), "fade": 0.04, "peak_at": round(t, 3)}
+
+
+audio, k = [], 0
+for seg in segments[1:]:
     t = seg['start']
-    f, loud, peak, dur = WHOOSH[k % len(WHOOSH)]
-    audio.append({"src": os.path.join(SFX, f), "at": round(max(t - peak, 0), 2), "from": 0, "dur": dur,
-                  "gain_db": round(TARGET - loud, 1), "fade": 0.03})
     key = next((m for m in REACT if abs(b[m] - t) < 1e-6), None)
     if key:
-        f, loud, frm, dur, target = REACT[key]
-        audio.append({"src": os.path.join(SFX, f), "at": round(t + 0.15, 2), "from": frm, "dur": dur,
-                      "gain_db": round(target - loud, 1), "fade": 0.05})
+        audio.append(sfx(REACT[key], t))
+    else:
+        audio.append(sfx(WHOOSH[k % len(WHOOSH)], t)); k += 1
 
 SUBS = [  # (sentence, first word, text)
     (0, 0, "데이터센터가 물을 낭비한다는 건<br>거짓말이라는 글이 화제입니다"),

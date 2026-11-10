@@ -10,7 +10,9 @@ import edge_tts
 work = sys.argv[1]
 here = os.path.dirname(os.path.abspath(__file__))
 os.makedirs(work, exist_ok=True)
-VOICE, RATE, LEAD, GAP, TAIL = 'ko-KR-InJoonNeural', '+35%', 0.15, 0.25, 0.10
+VOICE, RATE, LEAD, GAP, TAIL = 'ko-KR-InJoonNeural', '+35%', 0.15, 0.40, 0.10
+# extra silence inside a sentence where a scene change falls on a comma: (sentence, word index) -> seconds
+INSERT = {(4, 4): 0.3, (6, 6): 0.3, (9, 2): 0.3}
 
 
 def ff(args):
@@ -30,7 +32,16 @@ for k, line in enumerate(lines):
     open(mp3, 'wb').write(audio)
     a, b = max(words[0][0] - 0.05, 0), words[-1][1] + TAIL
     wav = os.path.join(work, f's{k:02d}.wav')
-    ff(['-i', mp3, '-af', f'atrim={a}:{b},asetpts=N/SR/TB', '-ar', '48000', '-ac', '1', wav])
+    ins = next(((i, d) for (kk, i), d in INSERT.items() if kk == k), None)
+    if ins:
+        i, d = ins
+        c = (words[i - 1][1] + words[i][0]) / 2  # middle of the comma pause
+        ff(['-i', mp3, '-filter_complex', f'[0:a]asplit[x][y];[x]atrim={a}:{c},asetpts=N/SR/TB,apad=pad_dur={d}[p];'
+            f'[y]atrim={c}:{b},asetpts=N/SR/TB[q];[p][q]concat=n=2:v=0:a=1[o]', '-map', '[o]', '-ar', '48000', '-ac', '1', wav])
+        words = [[w0 + (d if j >= i else 0), w1 + (d if j >= i else 0), w] for j, (w0, w1, w) in enumerate(words)]
+        b += d
+    else:
+        ff(['-i', mp3, '-af', f'atrim={a}:{b},asetpts=N/SR/TB', '-ar', '48000', '-ac', '1', wav])
     out.append({'text': line, 'start': round(t, 3), 'end': round(t + b - a, 3),
                 'words': [[round(t + w0 - a, 3), round(t + w1 - a, 3), w] for w0, w1, w in words]})
     parts.append(wav)
